@@ -1,7 +1,6 @@
 <?php
 require '../lib/db.php';
 require 'auth.php';
-session_start();
 
 redirectIfLoggedIn();
 $error = '';
