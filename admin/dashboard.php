@@ -81,11 +81,11 @@ $stats = [
                 Hôm nay, <?= date('d/m/Y') ?>
             </p>
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
-                Xin chào, <?= $userName ?> 👋
+                Xin chào, <?= $userName ?> 
             </h1>
-            <p class="text-blue-100 mt-2 text-sm sm:text-base max-w-lg">
+            <!-- <p class="text-blue-100 mt-2 text-sm sm:text-base max-w-lg">
                 Tổng quan hệ thống quản lý thiết kế — theo dõi nhanh số liệu và thao tác thường dùng.
-            </p>
+            </p> -->
         </div>
         <a href="/" target="_blank"
            class="inline-flex items-center gap-2 self-start sm:self-center bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200">
