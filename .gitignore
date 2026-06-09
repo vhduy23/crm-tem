@@ -3,4 +3,4 @@ uploads/
 error_log
 *.log
 *.zip
-db.php
+/lib/db.php
