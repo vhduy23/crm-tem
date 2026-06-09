@@ -1,0 +1,15 @@
+[14-May-2026 03:20:36 UTC] PHP Warning:  Undefined array key "user" in /homedata/achau1/public_html/admin/users/index.php on line 5
+[14-May-2026 03:20:36 UTC] PHP Warning:  Trying to access array offset on value of type null in /homedata/achau1/public_html/admin/users/index.php on line 5
+[14-May-2026 04:52:06 UTC] PHP Warning:  Undefined array key "user" in /homedata/achau1/public_html/admin/users/index.php on line 5
+[14-May-2026 04:52:06 UTC] PHP Warning:  Trying to access array offset on value of type null in /homedata/achau1/public_html/admin/users/index.php on line 5
+[15-May-2026 01:51:03 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function is_admin() in /homedata/achau1/public_html/admin/partials/header.php:48
+Stack trace:
+#0 /homedata/achau1/public_html/admin/users/index.php(2): include()
+#1 {main}
+  thrown in /homedata/achau1/public_html/admin/partials/header.php on line 48
+[15-May-2026 02:47:20 UTC] PHP Warning:  Undefined array key "user" in /homedata/achau1/public_html/admin/partials/header.php on line 5
+[15-May-2026 02:47:20 UTC] PHP Warning:  Trying to access array offset on value of type null in /homedata/achau1/public_html/admin/partials/header.php on line 5
+[15-May-2026 02:47:20 UTC] PHP Warning:  Undefined array key "user" in /homedata/achau1/public_html/admin/auth.php on line 10
+[15-May-2026 02:47:20 UTC] PHP Warning:  Trying to access array offset on value of type null in /homedata/achau1/public_html/admin/auth.php on line 10
+[15-May-2026 02:47:20 UTC] PHP Warning:  Undefined array key "user" in /homedata/achau1/public_html/admin/users/index.php on line 5
+[15-May-2026 02:47:20 UTC] PHP Warning:  Trying to access array offset on value of type null in /homedata/achau1/public_html/admin/users/index.php on line 5

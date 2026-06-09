@@ -1,0 +1,45 @@
+[15-May-2026 04:29:55 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:29:55 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:29:57 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:29:57 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:30:43 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:30:43 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:30:53 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:30:53 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:31:51 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:31:51 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:05 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:05 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:17 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:17 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:28 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:32:28 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:33:35 UTC] PHP Warning:  require(lib/db.php): Failed to open stream: No such file or directory in /homedata/achau1/public_html/front/product-detail.php on line 2
+[15-May-2026 04:33:35 UTC] PHP Fatal error:  Uncaught Error: Failed opening required 'lib/db.php' (include_path='.:/opt/cpanel/ea-php82/root/usr/share/pear') in /homedata/achau1/public_html/front/product-detail.php:2
+Stack trace:
+#0 {main}
+  thrown in /homedata/achau1/public_html/front/product-detail.php on line 2

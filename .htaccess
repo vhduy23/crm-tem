@@ -1,0 +1,53 @@
+
+# Bật RewriteEngine
+RewriteEngine On
+# ===== URL REWRITE =====
+RewriteRule ^thiet-ke/([^/]+)$ product-detail.php?slug=$1 [L,QSA]
+# ===== SECURITY HEADERS =====
+# Chặn clickjacking
+Header always set X-Frame-Options "SAMEORIGIN"
+# Chặn MIME type sniffing
+Header always set X-Content-Type-Options "nosniff"
+# Bật XSS filter trên trình duyệt cũ
+Header always set X-XSS-Protection "1; mode=block"
+# Chỉ gửi referrer khi cùng origin
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+# ===== BLOCK DIRECT ACCESS TO SENSITIVE DIRS =====
+# Chặn truy cập trực tiếp vào /lib/ (chứa db.php, credentials)
+<IfModule mod_rewrite.c>
+    RewriteRule ^lib/ - [F,L]
+    RewriteRule ^cache/ - [F,L]
+    RewriteRule ^cgi-bin/ - [F,L]
+</IfModule>
+# Chặn thực thi file PHP trong thư mục uploads (ngăn web shell)
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} ^/uploads/
+    RewriteRule \.php$ - [F,L]
+</IfModule>
+# Chặn truy cập file .ini, .sql, .env, .log
+<FilesMatch "\.(ini|sql|env|log|sh|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+# Chặn truy cập file .htaccess và .user.ini từ web
+<FilesMatch "^\.">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+# ===== PERFORMANCE =====
+# Cache tài nguyên tĩnh (ảnh, css, js) để tăng tốc độ
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png  "access plus 1 month"
+    ExpiresByType text/css   "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php82” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
