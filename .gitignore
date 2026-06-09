@@ -2,3 +2,4 @@ cache/
 uploads/
 error_log
 *.log
+*.zip
