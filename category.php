@@ -1,6 +1,6 @@
 <?php
 require 'lib/db.php';
-require 'lib/categories.php';
+require_once 'lib/categories.php';
 include 'front/header.php';
 
 $cat_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;

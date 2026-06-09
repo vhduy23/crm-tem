@@ -1,7 +1,7 @@
 <?php 
-require __DIR__ . '../../lib/db.php';
-require __DIR__ . '../../lib/function.php';
-require __DIR__ . '../../lib/categories.php';
+require_once __DIR__ . '/../lib/db.php';
+require_once __DIR__ . '/../lib/function.php';
+require_once __DIR__ . '/../lib/categories.php';
 
 // lấy danh mục
 $catTree = buildCategoryTree(fetchCategories($pdo));

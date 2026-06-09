@@ -1,5 +1,5 @@
 <?php
-require 'lib/categories.php';
+require_once 'lib/categories.php';
 require 'front/header.php';
 // ===== GET PARAM =====
 $keyword = $_GET['q'] ?? '';
@@ -349,24 +349,27 @@ foreach ($data as &$p) {
 </div>
 <!-- Category filter + Mobile Filter JS -->
 <script>
-document.querySelectorAll('.cat-filter-toggle').forEach(function (btn) {
-    btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.cat-filter-toggle');
+    if (!btn) return;
 
-        const group = btn.closest('.cat-filter-group');
-        const children = group.querySelector('.cat-filter-children');
-        const expanded = !group.classList.contains('is-expanded');
+    e.preventDefault();
+    e.stopPropagation();
 
-        group.classList.toggle('is-expanded', expanded);
-        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    const group = btn.closest('.cat-filter-group');
+    if (!group) return;
+    const children = group.querySelector('.cat-filter-children');
+    if (!children) return;
 
-        if (expanded) {
-            children.removeAttribute('hidden');
-        } else {
-            children.setAttribute('hidden', '');
-        }
-    });
+    const expanded = !group.classList.contains('is-expanded');
+
+    group.classList.toggle('is-expanded', expanded);
+    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+
+    // Dùng style.display thay vì hidden attribute
+    // vì Tailwind class 'flex' sẽ override [hidden]{display:none}
+    children.style.display = expanded ? 'flex' : 'none';
+    children.style.flexDirection = 'column';
 });
 
 function openMobileFilter() {

@@ -38,27 +38,25 @@ $filterPrefix = $filterPrefix ?? 'desktop';
         <?php else: ?>
         <div class="cat-filter-group <?= $isExpanded ? 'is-expanded' : '' ?>"
              data-group-id="<?= htmlspecialchars($filterPrefix) ?>-<?= (int) $parent['id'] ?>">
-            <div class="flex items-stretch gap-0.5">
+             <div class="flex items-center p-[9px_12px] rounded-[9px] transition-colors border-[1.5px] no-underline
+                        <?= $parentActive ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
+                <a href="<?= buildFilterUrl(['cat' => $parent['id']]) ?>"
+                   class="cat-filter-link cat-filter-link--parent flex-1 flex items-center gap-2.5 min-w-0 no-underline">
+                    <span class="w-2.5 h-2.5 rounded-full tag-<?= (int) $parent['id'] ?> shrink-0"></span>
+                    <span class="text-[13.5px] font-semibold text-[#0B2558] truncate"><?= htmlspecialchars($parent['name']) ?></span>
+                </a>                
                 <button type="button"
-                        class="cat-filter-toggle"
+                        class="cat-filter-toggle shrink-0 flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#0B2558]/10 transition-colors"
                         aria-expanded="<?= $isExpanded ? 'true' : 'false' ?>"
                         aria-controls="<?= htmlspecialchars($filterPrefix) ?>-children-<?= (int) $parent['id'] ?>"
                         title="Mở / thu gọn danh mục con">
                     <svg class="cat-filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
-                <a href="<?= buildFilterUrl(['cat' => $parent['id']]) ?>"
-                   class="cat-filter-link cat-filter-link--parent flex-1 flex items-center justify-between p-[9px_10px_9px_4px] rounded-[9px] transition-colors border-[1.5px] no-underline min-w-0
-                   <?= $parentActive ? 'is-active bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="w-2.5 h-2.5 rounded-full tag-<?= (int) $parent['id'] ?> shrink-0"></span>
-                        <span class="text-[13.5px] font-semibold text-[#0B2558] truncate"><?= htmlspecialchars($parent['name']) ?></span>
-                    </div>
-                    <span class="cat-filter-count <?= $parentActive ? 'is-active' : '' ?>"><?= $parentCount ?></span>
-                </a>
+                <span class="cat-filter-count <?= $parentActive ? 'is-active' : '' ?>"><?= $parentCount ?></span>
             </div>
             <div id="<?= htmlspecialchars($filterPrefix) ?>-children-<?= (int) $parent['id'] ?>"
                  class="cat-filter-children flex flex-col gap-0.5 mt-0.5 mb-0.5"
-                 <?= $isExpanded ? '' : 'hidden' ?>>
+                 <?= $isExpanded ? '' : 'style="display:none"' ?>>
                 <?php foreach ($parent['children'] as $child):
                     $childActive = $category_id === (int) $child['id'];
                     $childCount = countCategoryProducts($pdo, (int) $child['id'], false);
