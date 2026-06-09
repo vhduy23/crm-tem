@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/homedata/achau1/public-html/
+    - /bin/cp -R * $DEPLOYPATH
