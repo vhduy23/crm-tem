@@ -1,9 +1,15 @@
 <?php
 
+// $db_host = $_ENV['DB_HOST'] ?? 'localhost';
+// $db_name = $_ENV['DB_NAME'] ?? 'achau1_qltem';
+// $db_user = $_ENV['DB_USER'] ?? 'achau1_qltem';
+// $db_pass = $_ENV['DB_PASS'] ?? 'FP8SmO*Zv,Oa';
+
 $db_host = $_ENV['DB_HOST'] ?? 'localhost';
-$db_name = $_ENV['DB_NAME'] ?? 'achau1_qltem';
-$db_user = $_ENV['DB_USER'] ?? 'achau1_qltem';
-$db_pass = $_ENV['DB_PASS'] ?? 'FP8SmO*Zv,Oa';
+$db_name = $_ENV['DB_NAME'] ?? 'crmtem';
+$db_user = $_ENV['DB_USER'] ?? 'root';
+$db_pass = $_ENV['DB_PASS'] ?? '';
+
 try {
     $pdo = new PDO(
         "mysql:host={$db_host};dbname={$db_name};charset=utf8mb4",
