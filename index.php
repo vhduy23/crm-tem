@@ -1,4 +1,5 @@
 <?php
+require 'lib/categories.php';
 require 'front/header.php';
 // ===== GET PARAM =====
 $keyword = $_GET['q'] ?? '';
@@ -32,8 +33,10 @@ if ($keyword) {
     $params[] = "%$keyword%";
 }
 if ($category_id > 0) {
-    $conditions[] = "p.category_id = ?";
-    $params[] = $category_id;
+    $catIds = getCategoryFilterIds($pdo, $category_id);
+    $catPlaceholders = implode(',', array_fill(0, count($catIds), '?'));
+    $conditions[] = "p.category_id IN ($catPlaceholders)";
+    $params = array_merge($params, $catIds);
 }
 if ($brand_id > 0) {
     $conditions[] = "p.brand_id = ?";
@@ -51,7 +54,10 @@ $stmt = $pdo->prepare("
         p.*,
         b.name as brand_name,
         c.id as cate_id,
-        c.name as cate_name,
+        CASE
+            WHEN cp.name IS NOT NULL THEN CONCAT(cp.name, ' › ', c.name)
+            ELSE c.name
+        END as cate_name,
         (
             SELECT GROUP_CONCAT(image_path)
             FROM product_images 
@@ -66,24 +72,16 @@ $stmt = $pdo->prepare("
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN categories cp ON c.parent_id = cp.id
     $where
     ORDER BY p.id DESC
     LIMIT $limit OFFSET $offset
 ");
 $totalPro = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
 // ===== CATEGORY =====
-$sql = "
-    SELECT 
-        c.id, 
-        c.name, 
-        COUNT(p.id) as product_count 
-    FROM categories c
-    LEFT JOIN products p ON c.id = p.category_id
-    GROUP BY c.id
-    ORDER BY c.name ASC
-";
-$categories = $pdo->query($sql)->fetchAll();
-$cateTotal = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+$categories = fetchCategories($pdo);
+$categoryTree = buildCategoryTree($categories);
+$cateTotal = $pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NULL")->fetchColumn();
 // ===== BRAND =====
 $brandSql = "
     SELECT 
@@ -135,27 +133,8 @@ foreach ($data as &$p) {
                         Danh mục
                     </h3>
                 </div>
-                <div class="p-[14px_18px_16px] flex flex-col gap-1">
-                    <a href="<?= buildFilterUrl(['cat' => 0]) ?>"
-                       class="flex items-center justify-between p-[9px_12px] rounded-[9px] cursor-pointer transition-colors border-[1.5px] no-underline
-                       <?= $category_id == 0 ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#1558c0] shrink-0"></span>
-                            <span class="text-[13.5px] font-medium text-[#0B2558]">Tất cả</span>
-                        </div>
-                        <span class="text-[11.5px] font-semibold text-[#8892AA] px-[8px] py-[0px] rounded-full pt-[2px] pl-[9px]"><?= $totalPro ?></span>
-                    </a>
-                    <?php foreach($categories as $cate): ?>
-                    <a href="<?= buildFilterUrl(['cat' => $cate['id']]) ?>"
-                       class="flex items-center justify-between p-[9px_12px] rounded-[9px] cursor-pointer transition-colors border-[1.5px] no-underline
-                       <?= $category_id == $cate['id'] ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-2.5 h-2.5 rounded-full tag-<?= $cate['id'] ?> shrink-0"></span>
-                            <span class="text-[13.5px] font-medium text-[#0B2558]"><?= $cate['name'] ?></span>
-                        </div>
-                        <span class="text-[11.5px] font-semibold text-[#8892AA] px-[8px] py-[0px] rounded-full pt-[2px] pl-[9px] <?= $category_id == $cate['id'] ? 'bg-[#1a52b5] text-white ' : '' ?>"><?= $cate['product_count'] ?></span>
-                    </a>
-                    <?php endforeach; ?>
+                <div class="p-[14px_18px_16px]">
+                    <?php $filterPrefix = 'desktop'; include __DIR__ . '/front/partials/category-filter.php'; ?>
                 </div>
             </div>
             <div class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden">
@@ -204,28 +183,7 @@ foreach ($data as &$p) {
                             <svg width="14" height="14" class="text-[#1a52b5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                             Danh mục
                         </h4>
-                        <div class="flex flex-col gap-1">
-                            <a href="<?= buildFilterUrl(['cat' => 0]) ?>"
-                               class="flex items-center justify-between p-[9px_12px] rounded-[9px] transition-colors border-[1.5px] no-underline
-                               <?= $category_id == 0 ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-[#1558c0] shrink-0"></span>
-                                    <span class="text-[13.5px] font-medium text-[#0B2558]">Tất cả</span>
-                                </div>
-                                <span class="text-[11.5px] font-semibold text-[#8892AA] px-[8px] py-[0px] rounded-full pt-[2px] pl-[9px]"><?= $totalPro ?></span>
-                            </a>
-                            <?php foreach($categories as $cate): ?>
-                            <a href="<?= buildFilterUrl(['cat' => $cate['id']]) ?>"
-                               class="flex items-center justify-between p-[9px_12px] rounded-[9px] transition-colors border-[1.5px] no-underline
-                               <?= $category_id == $cate['id'] ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="w-2.5 h-2.5 rounded-full tag-<?= $cate['id'] ?> shrink-0"></span>
-                                    <span class="text-[13.5px] font-medium text-[#0B2558]"><?= $cate['name'] ?></span>
-                                </div>
-                                <span class="text-[11.5px] font-semibold text-[#8892AA] px-[8px] py-[0px] rounded-full pt-[2px] pl-[9px] <?= $category_id == $cate['id'] ? 'bg-[#1a52b5] text-white ' : '' ?>"><?= $cate['product_count'] ?></span>
-                            </a>
-                            <?php endforeach; ?>
-                        </div>
+                        <?php $filterPrefix = 'mobile'; include __DIR__ . '/front/partials/category-filter.php'; ?>
                     </div>
                     <!-- Thương hiệu -->
                     <div>
@@ -299,8 +257,7 @@ foreach ($data as &$p) {
                 </span>
                 <?php endif; ?>
                 <?php if($category_id > 0):
-                    $activeCatName = '';
-                    foreach($categories as $c) { if($c['id'] == $category_id) { $activeCatName = $c['name']; break; } }
+                    $activeCatName = getCategoryDisplayName($categories, $category_id);
                 ?>
                 <span class="inline-flex items-center gap-1.5 bg-[#e8f5e9] text-[#0F6E56] border border-[#0F6E56]/20 rounded-full px-3 py-1 text-[12.5px] font-medium">
                     Danh mục: <?= htmlspecialchars($activeCatName) ?>
@@ -390,8 +347,28 @@ foreach ($data as &$p) {
         </main>
     </div>
 </div>
-<!-- Mobile Filter JS -->
+<!-- Category filter + Mobile Filter JS -->
 <script>
+document.querySelectorAll('.cat-filter-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const group = btn.closest('.cat-filter-group');
+        const children = group.querySelector('.cat-filter-children');
+        const expanded = !group.classList.contains('is-expanded');
+
+        group.classList.toggle('is-expanded', expanded);
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+
+        if (expanded) {
+            children.removeAttribute('hidden');
+        } else {
+            children.setAttribute('hidden', '');
+        }
+    });
+});
+
 function openMobileFilter() {
     const overlay = document.getElementById('mobileFilterOverlay');
     const drawer = document.getElementById('mobileFilterDrawer');

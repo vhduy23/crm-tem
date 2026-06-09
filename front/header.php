@@ -1,9 +1,10 @@
 <?php 
 require __DIR__ . '../../lib/db.php';
 require __DIR__ . '../../lib/function.php';
+require __DIR__ . '../../lib/categories.php';
 
 // lấy danh mục
-$cats = $pdo->query("SELECT id, name FROM categories ORDER BY name ASC")->fetchAll();
+$catTree = buildCategoryTree(fetchCategories($pdo));
 if(isDetail()){
     $slug = $_GET['slug'] ?? '';
 
@@ -54,11 +55,25 @@ if(isDetail()){
 
                 <a href="/" class="hover:text-[#e1aa58] text-white font-medium">Trang chủ</a>
 
-                <?php foreach($cats as $c): ?>
-                    <a href="/category.php?id=<?= $c['id'] ?>"
-                       class="hover:text-[#e1aa58] text-white font-medium">
-                        <?= $c['name'] ?>
-                    </a>
+                <?php foreach($catTree as $parent): ?>
+                    <div class="relative group">
+                        <a href="/category.php?id=<?= $parent['id'] ?>"
+                           class="hover:text-[#e1aa58] text-white font-medium">
+                            <?= htmlspecialchars($parent['name']) ?>
+                        </a>
+                        <?php if (!empty($parent['children'])): ?>
+                        <div class="absolute left-0 top-full pt-2 hidden group-hover:block z-50">
+                            <div class="bg-white rounded-lg shadow-lg py-2 min-w-[180px]">
+                                <?php foreach ($parent['children'] as $child): ?>
+                                <a href="/category.php?id=<?= $child['id'] ?>"
+                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                                    <?= htmlspecialchars($child['name']) ?>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 <?php endforeach; ?>
 
             </nav>
