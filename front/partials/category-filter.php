@@ -18,7 +18,6 @@ $filterPrefix = $filterPrefix ?? 'desktop';
         </div>
         <span class="cat-filter-count"><?= $totalPro ?></span>
     </a>
-
     <?php foreach ($categoryTree as $parent):
         $hasChildren = !empty($parent['children']);
         $parentActive = $category_id === (int) $parent['id'];

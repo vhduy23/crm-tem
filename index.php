@@ -284,12 +284,12 @@ foreach ($data as &$p) {
                     <article class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 hover:border-[#1a52b5]/25 transition-all duration-300">
                         
                         <div class="relative overflow-hidden">
-                            <a href="/thiet-ke/<?= $p['slug'] ?>" class="block aspect-[4/3] bg-[#EFF1F7]">
+                            <button type="button" class="open-design-popup block w-full aspect-[4/3] bg-[#EFF1F7] p-0 border-0 cursor-pointer overflow-hidden" data-product-id="<?= $p['id'] ?>">
                                 <img src="<?= $p['thumb'] ?>" 
                                      class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)]" 
                                      loading="lazy" 
                                      alt="<?= htmlspecialchars($p['name']) ?>"/>
-                            </a>
+                            </button>
                             <?php if(!empty($p['cate_name'])): ?>
                             <span class="absolute top-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
                                 <?= htmlspecialchars($p['cate_name']) ?>
@@ -297,17 +297,17 @@ foreach ($data as &$p) {
                             <?php endif; ?>
                         </div>
                         <div class="p-3.5 md:p-4">
-                            <a href="/thiet-ke/<?= $p['slug'] ?>">
+                            <button type="button" class="open-design-popup text-left w-full bg-transparent border-0 p-0 cursor-pointer" data-product-id="<?= $p['id'] ?>">
                                 <!-- <p class="text-[11px] font-semibold tracking-wider uppercase text-[#8892AA] mb-1.5">Sản phẩm</p> -->
                                 <h3 class="text-[15px] font-semibold text-[#0B2558] mb-2.5 leading-snug whitespace-nowrap overflow-hidden text-ellipsis">
                                     <?= htmlspecialchars($p['name']) ?>
                                 </h3>
-                            </a>
+                            </button>
                             
                             <div class="grid grid-cols-1 gap-2 mt-3 md:grid-cols-2 md:flex">
-                                <a href="/thiet-ke/<?= $p['slug'] ?>" class="flex-1 px-3 py-2 bg-[#0B2558] text-white rounded-lg text-[13px] font-semibold text-center hover:bg-[#163580] transition-colors">
+                                <button type="button" class="open-design-popup flex-1 px-3 py-2 bg-[#0B2558] text-white rounded-lg text-[13px] font-semibold text-center hover:bg-[#163580] transition-colors border-0 cursor-pointer" data-product-id="<?= $p['id'] ?>">
                                     Xem thiết kế
-                                </a>
+                                </button>
                                 
                                 <button 
                                     class="add-print flex justify-center items-center gap-1.5 px-3 py-2 bg-[#EFF1F7] hover:bg-[#fdf3c0] hover:text-[#0B2558] text-[#374368] rounded-lg text-[12px] transition-colors whitespace-nowrap"
@@ -347,31 +347,117 @@ foreach ($data as &$p) {
         </main>
     </div>
 </div>
+<?php
+$_modalProducts = array_map(function($p) {
+    return [
+        'id'         => (int)$p['id'],
+        'name'       => $p['name'],
+        'slug'       => $p['slug'],
+        'cate_name'  => $p['cate_name'] ?? '',
+        'brand_name' => $p['brand_name'] ?? '',
+        'images'     => array_values(array_filter((array)($p['images'] ?? []))),
+        'thumb'      => $p['thumb'] ?? '',
+    ];
+}, $data ?? []);
+?>
+<script>const DESIGN_PRODUCTS = <?= json_encode(array_values($_modalProducts), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+<!-- ===== DESIGN POPUP MODAL ===== -->
+<style>
+#designModal { transition: opacity 0.22s ease; }
+/* Custom zoom via CSS transform */
+.designModalSwiper .swiper-slide { overflow:hidden !important; }
+.designModalSwiper .swiper-slide > img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; border-radius:10px; cursor:zoom-in; user-select:none; -webkit-user-drag:none; transform-origin:center center; transition:transform 0.18s ease; }
+.designModalSwiper .swiper-slide.is-zoomed > img { cursor:grab; transition:none; }
+.designModalSwiper .swiper-slide.is-zoomed > img.is-panning { cursor:grabbing; }
+/* nav buttons */
+.designModalSwiper .swiper-button-prev,
+.designModalSwiper .swiper-button-next { color:#fff; --swiper-navigation-size:22px; background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; }
+.designModalSwiper .swiper-button-prev:hover,
+.designModalSwiper .swiper-button-next:hover { background:rgba(255,255,255,0.22); }
+.designModalSwiper .swiper-pagination-bullet { background:#fff; opacity:0.5; }
+.designModalSwiper .swiper-pagination-bullet-active { opacity:1; }
+/* zoom controls */
+.zoom-ctrl-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.10); color:#fff; cursor:pointer; font-size:18px; font-weight:600; line-height:1; transition:background .15s; }
+.zoom-ctrl-btn:hover { background:rgba(255,255,255,0.22); }
+#zoomLevelBadge { font-size:12px; font-weight:600; color:rgba(255,255,255,0.7); min-width:38px; text-align:center; }
+</style>
+<div id="designModal"
+     style="display:none;opacity:0;"
+     class="fixed inset-0 z-[500] flex flex-col"
+     role="dialog" aria-modal="true" aria-labelledby="modalProductName">
+  <!-- Backdrop -->
+  <div class="absolute inset-0" style="background:rgba(5,10,25,0.90);backdrop-filter:blur(6px);" onclick="closeDesignModal()"></div>
+  <!-- Content -->
+  <div class="relative z-10 flex flex-col h-full">
+    <!-- Top bar -->
+    <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 shrink-0" style="border-bottom:1px solid rgba(255,255,255,0.10);">
+      <div class="min-w-0 flex-1">
+        <p id="modalCateBadge" class="text-[10.5px] font-semibold tracking-widest uppercase mb-0.5" style="color:rgba(255,255,255,0.45);"></p>
+        <h2 id="modalProductName" class="text-[18px] md:text-[22px] font-bold text-white leading-tight" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:58vw;"></h2>
+      </div>
+      <div class="flex items-center gap-2 md:gap-3 ml-4 shrink-0">
+        <!-- Zoom controls -->
+        <div class="flex items-center gap-1" title="Thu nhỏ / Phóng to (cuộn chuột, chụm tay, double-click)">
+          <button class="zoom-ctrl-btn" onclick="dZoomOut()" title="Thu nhỏ (-)">&#8722;</button>
+          <span id="zoomLevelBadge">100%</span>
+          <button class="zoom-ctrl-btn" onclick="dZoomIn()" title="Phóng to (+)">&#43;</button>
+          <button class="zoom-ctrl-btn" onclick="dZoomReset()" title="Đặt lại" style="width:auto;padding:0 8px;font-size:11px;font-weight:700;">reset</button>
+        </div>
+        <a id="modalDetailLink" href="#"
+           class="hidden items-center gap-1.5 px-3.5 py-[7px] rounded-[9px] text-white text-[12.5px] font-medium transition-colors no-underline"
+           style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Chi tiết
+        </a>
+        <button onclick="closeDesignModal()"
+                class="w-9 h-9 flex items-center justify-center rounded-full text-white transition-all"
+                style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);"
+                onmouseover="this.style.background='rgba(220,38,38,0.75)'" onmouseout="this.style.background='rgba(255,255,255,0.10)'"
+                title="Đóng (ESC)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Swiper -->
+    <div class="flex-1 flex items-center justify-center p-3 md:p-6 min-h-0">
+      <div class="designModalSwiper swiper w-full" style="max-width:900px;height:calc(100vh - 156px);max-height:calc(100vh - 156px);">
+        <div class="swiper-wrapper" id="modalSwiperWrapper"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-pagination" style="bottom:0;"></div>
+      </div>
+    </div>
+    <!-- Mobile: link to detail -->
+    <div class="sm:hidden shrink-0 px-4 pb-4">
+      <a id="modalDetailLinkMobile" href="#"
+         class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-[13px] font-medium transition-all no-underline"
+         style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Xem trang chi tiết
+      </a>
+    </div>
+  </div>
+</div>
 <!-- Category filter + Mobile Filter JS -->
 <script>
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('.cat-filter-toggle');
     if (!btn) return;
-
     e.preventDefault();
     e.stopPropagation();
-
     const group = btn.closest('.cat-filter-group');
     if (!group) return;
     const children = group.querySelector('.cat-filter-children');
     if (!children) return;
-
     const expanded = !group.classList.contains('is-expanded');
-
     group.classList.toggle('is-expanded', expanded);
     btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-
     // Dùng style.display thay vì hidden attribute
     // vì Tailwind class 'flex' sẽ override [hidden]{display:none}
     children.style.display = expanded ? 'flex' : 'none';
     children.style.flexDirection = 'column';
 });
-
 function openMobileFilter() {
     const overlay = document.getElementById('mobileFilterOverlay');
     const drawer = document.getElementById('mobileFilterDrawer');
@@ -396,5 +482,181 @@ function closeMobileFilter() {
         document.body.style.overflow = '';
     }, 300);
 }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+// ===== Design Popup =====
+var _dSwiper = null;
+function openDesignModal(productId) {
+    var product = null;
+    for (var i = 0; i < DESIGN_PRODUCTS.length; i++) {
+        if (DESIGN_PRODUCTS[i].id == productId) { product = DESIGN_PRODUCTS[i]; break; }
+    }
+    if (!product) return;
+    document.getElementById('modalProductName').textContent = product.name;
+    document.getElementById('modalCateBadge').textContent = product.cate_name || '';
+    var detailUrl = '/thiet-ke/' + product.slug;
+    document.getElementById('modalDetailLink').href = detailUrl;
+    document.getElementById('modalDetailLinkMobile').href = detailUrl;
+    // Destroy previous Swiper synchronously before rebuilding slides
+    if (_dSwiper) { try { _dSwiper.destroy(true, false); } catch(e){} _dSwiper = null; }
+
+    // Build slides — plain img
+    var wrapper = document.getElementById('modalSwiperWrapper');
+    wrapper.innerHTML = '';
+    var imgs = (product.images && product.images.length > 0) ? product.images : (product.thumb ? [product.thumb] : []);
+    imgs.forEach(function(src) {
+        if (!src) return;
+        var slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = product.name;
+        img.draggable = false;
+        slide.appendChild(img);
+        wrapper.appendChild(slide);
+    });
+
+    // Show modal first so container has dimensions
+    var modal = document.getElementById('designModal');
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    document.body.style.overflow = 'hidden';
+
+    // Init Swiper AFTER layout
+    requestAnimationFrame(function() {
+        _dSwiper = new Swiper('.designModalSwiper', {
+            loop: imgs.length > 1,
+            navigation: { nextEl: '.designModalSwiper .swiper-button-next', prevEl: '.designModalSwiper .swiper-button-prev' },
+            pagination: { el: '.designModalSwiper .swiper-pagination', clickable: true },
+            keyboard: { enabled: true },
+            allowTouchMove: true,
+            on: { slideChange: function() { _dzReset(); } },
+        });
+        _dzReset();
+        requestAnimationFrame(function() { modal.style.opacity = '1'; });
+    });
+}
+// ── Custom zoom state ──
+var _dz = { scale:1, panX:0, panY:0, min:1, max:4, dragging:false, lx:0, ly:0, pinching:false, pd:0, ps:1 };
+function _dzImg() {
+    if (!_dSwiper) return null;
+    // loop mode duplicates slides; find the active one by class
+    var active = document.querySelector('.designModalSwiper .swiper-slide-active');
+    return active ? active.querySelector('img') : null;
+}
+function _dzApply(noTransition) {
+    var img = _dzImg();
+    if (!img) return;
+    var slide = img.parentElement;
+    if (noTransition) img.style.transition = 'none';
+    else img.style.transition = '';
+    img.style.transform = 'translate('+_dz.panX+'px,'+_dz.panY+'px) scale('+_dz.scale+')';
+    if (slide) slide.classList.toggle('is-zoomed', _dz.scale > 1.01);
+    if (_dSwiper) _dSwiper.allowTouchMove = _dz.scale <= 1.01;
+    _updateZoomBadge(_dz.scale);
+}
+function _dzSetScale(s, noTransition) {
+    _dz.scale = Math.min(_dz.max, Math.max(_dz.min, s));
+    if (_dz.scale <= 1.01) { _dz.panX = 0; _dz.panY = 0; _dz.scale = 1; }
+    _dzApply(noTransition);
+}
+function _dzReset() { _dz.scale=1; _dz.panX=0; _dz.panY=0; _dzApply(false); _updateZoomBadge(1); }
+function dZoomIn()    { _dzSetScale(_dz.scale + 0.5); }
+function dZoomOut()   { _dzSetScale(_dz.scale - 0.5); }
+function dZoomReset() { _dzReset(); }
+// Attach zoom events once on the swiper element
+(function() {
+    var el = document.querySelector('.designModalSwiper');
+    if (!el) return;
+    // Scroll wheel
+    el.addEventListener('wheel', function(e) {
+        if (document.getElementById('designModal').style.display === 'none') return;
+        e.preventDefault();
+        _dzSetScale(_dz.scale + (e.deltaY < 0 ? 0.25 : -0.25), true);
+    }, { passive: false });
+    // Double-click toggle
+    el.addEventListener('dblclick', function(e) {
+        if (document.getElementById('designModal').style.display === 'none') return;
+        _dz.scale > 1.01 ? _dzReset() : _dzSetScale(2);
+    });
+    // Mouse drag pan
+    el.addEventListener('mousedown', function(e) {
+        if (_dz.scale <= 1.01) return;
+        _dz.dragging = true; _dz.lx = e.clientX; _dz.ly = e.clientY;
+        var img = _dzImg(); if (img) img.classList.add('is-panning');
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!_dz.dragging) return;
+        _dz.panX += e.clientX - _dz.lx; _dz.panY += e.clientY - _dz.ly;
+        _dz.lx = e.clientX; _dz.ly = e.clientY;
+        var img = _dzImg();
+        if (img) img.style.transform = 'translate('+_dz.panX+'px,'+_dz.panY+'px) scale('+_dz.scale+')';
+    });
+    document.addEventListener('mouseup', function() {
+        if (!_dz.dragging) return;
+        _dz.dragging = false;
+        var img = _dzImg(); if (img) img.classList.remove('is-panning');
+    });
+    // Touch pinch + pan
+    el.addEventListener('touchstart', function(e) {
+        if (document.getElementById('designModal').style.display === 'none') return;
+        if (e.touches.length === 2) {
+            _dz.pinching = true;
+            _dz.pd = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+            _dz.ps = _dz.scale;
+            e.preventDefault();
+        } else if (e.touches.length === 1 && _dz.scale > 1.01) {
+            _dz.dragging = true; _dz.lx = e.touches[0].clientX; _dz.ly = e.touches[0].clientY;
+        }
+    }, { passive: false });
+    el.addEventListener('touchmove', function(e) {
+        if (document.getElementById('designModal').style.display === 'none') return;
+        if (_dz.pinching && e.touches.length === 2) {
+            var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+            _dzSetScale(_dz.ps * (d / _dz.pd), true);
+            e.preventDefault();
+        } else if (_dz.dragging && e.touches.length === 1) {
+            _dz.panX += e.touches[0].clientX - _dz.lx; _dz.panY += e.touches[0].clientY - _dz.ly;
+            _dz.lx = e.touches[0].clientX; _dz.ly = e.touches[0].clientY;
+            var img = _dzImg();
+            if (img) img.style.transform = 'translate('+_dz.panX+'px,'+_dz.panY+'px) scale('+_dz.scale+')';
+            e.preventDefault();
+        }
+    }, { passive: false });
+    el.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) _dz.pinching = false;
+        if (e.touches.length === 0) _dz.dragging = false;
+    });
+})();
+function closeDesignModal() {
+    var modal = document.getElementById('designModal');
+    modal.style.opacity = '0';
+    setTimeout(function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        // Don't destroy Swiper here — it corrupts the container.
+        // Swiper is destroyed in openDesignModal before re-init.
+    }, 220);
+}
+function _updateZoomBadge(scale) {
+    var pct = Math.round((scale || 1) * 100);
+    var el = document.getElementById('zoomLevelBadge');
+    if (el) el.textContent = pct + '%';
+}
+// Event delegation: open popup
+document.addEventListener('click', function(e) {
+    var trigger = e.target.closest('.open-design-popup');
+    if (trigger) {
+        e.preventDefault();
+        openDesignModal(trigger.dataset.productId);
+    }
+});
+// Close on ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDesignModal();
+});
 </script>
 <?php require 'front/footer.php'; ?>
