@@ -27,9 +27,17 @@ $stmt->execute([$product['brand_id']]);
 $brand = $stmt->fetch();
 
 // lấy category
-$stmt = $pdo->prepare("SELECT name FROM categories WHERE id=?");
+$stmt = $pdo->prepare("
+    SELECT c.name, cp.name AS parent_name
+    FROM categories c
+    LEFT JOIN categories cp ON c.parent_id = cp.id
+    WHERE c.id = ?
+");
 $stmt->execute([$product['category_id']]);
 $category = $stmt->fetch();
+$categoryLabel = $category
+    ? (!empty($category['parent_name']) ? $category['parent_name'] . ' › ' . $category['name'] : $category['name'])
+    : '';
 
 ?>
 
@@ -177,7 +185,7 @@ $category = $stmt->fetch();
             </p>
             <div class="mt-50 flex justify" style="margin-top: 35px;">
                 <div><strong>Thương hiệu:</strong> <?= $brand['name'] ?? '' ?></div>
-                <div><strong>Danh mục:</strong> <?= $category['name'] ?? '' ?></div>
+                <div><strong>Danh mục:</strong> <?= htmlspecialchars($categoryLabel) ?></div>
             </div>
             <button 
                 style="margin-top: 30px"

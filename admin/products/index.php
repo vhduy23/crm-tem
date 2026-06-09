@@ -1,5 +1,6 @@
 <?php
 require '../../lib/db.php';
+require '../../lib/categories.php';
 include '../partials/header.php';
 
 // ===== GET FILTER =====
@@ -23,8 +24,14 @@ if ($keyword) {
 }
 
 if ($category_id) {
-    $where[] = "p.category_id = :category_id";
-    $params[':category_id'] = $category_id;
+    $catIds = getCategoryFilterIds($pdo, (int) $category_id);
+    $catPlaceholders = [];
+    foreach ($catIds as $i => $catId) {
+        $key = ':cat_' . $i;
+        $catPlaceholders[] = $key;
+        $params[$key] = $catId;
+    }
+    $where[] = 'p.category_id IN (' . implode(', ', $catPlaceholders) . ')';
 }
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -39,7 +46,10 @@ $totalPages = ceil($total / $limit);
 $stmt = $pdo->prepare("
     SELECT p.*, 
            b.name as brand_name,
-           c.name as category_name,
+           CASE
+               WHEN cp.name IS NOT NULL THEN CONCAT(cp.name, ' › ', c.name)
+               ELSE c.name
+           END as category_name,
            (
                SELECT image_path 
                FROM product_images 
@@ -49,6 +59,7 @@ $stmt = $pdo->prepare("
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN categories cp ON c.parent_id = cp.id
     $whereSQL
     ORDER BY p.id DESC
     LIMIT :limit OFFSET :offset
@@ -63,7 +74,7 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 
 // ===== LOAD CATEGORY =====
-$categories = $pdo->query("SELECT id, name FROM categories")->fetchAll();
+$categories = fetchCategories($pdo);
 ?>
 
 <div class="bg-white p-6 rounded-xl shadow-md">
@@ -87,12 +98,7 @@ $categories = $pdo->query("SELECT id, name FROM categories")->fetchAll();
 
         <select name="category_id" class="border p-2 rounded">
             <option value="">-- Danh mục --</option>
-            <?php foreach($categories as $c): ?>
-                <option value="<?= $c['id'] ?>"
-                    <?= $category_id == $c['id'] ? 'selected' : '' ?>>
-                    <?= $c['name'] ?>
-                </option>
-            <?php endforeach; ?>
+            <?php renderCategorySelectOptions($categories, $category_id); ?>
         </select>
 
         <button class="bg-blue-500 text-white px-4 rounded">

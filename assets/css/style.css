@@ -47,3 +47,54 @@ a  { text-decoration: none; color: inherit; }
 .tag-10 { background-color: #53116d;}
 .tag-11 { background-color: #6d3d11;}
 .tag-12 { background-color: #6d113f;}
+
+/* ── Front category filter (2-level accordion) ── */
+.cat-filter-count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 9px 0 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.cat-filter-count.is-active {
+  background: var(--blue);
+  color: #fff;
+}
+.cat-filter-toggle {
+  width: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans), transform var(--trans);
+}
+.cat-filter-toggle:hover {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+.cat-filter-group.is-expanded .cat-filter-toggle {
+  color: var(--blue);
+}
+.cat-filter-chevron {
+  transition: transform var(--trans);
+}
+.cat-filter-group.is-expanded .cat-filter-chevron {
+  transform: rotate(90deg);
+}
+.cat-filter-children {
+  animation: catFilterSlide .2s ease;
+}
+@keyframes catFilterSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cat-filter-link.is-active .cat-filter-count {
+  background: var(--blue);
+  color: #fff;
+}

@@ -1,6 +1,7 @@
 <?php
 require '../../lib/db.php';
 require '../../lib/image.php';
+require '../../lib/categories.php';
 
 // lấy id
 $id = $_GET['id'] ?? 0;
@@ -17,7 +18,7 @@ $images = $stmt->fetchAll();
 
 // lấy brand + category
 $brands = $pdo->query("SELECT id, name FROM brands")->fetchAll();
-$categories = $pdo->query("SELECT id, name FROM categories")->fetchAll();
+$categories = fetchCategories($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -99,12 +100,7 @@ include '../partials/header.php';
             <!-- Category -->
             <select name="category_id" class="w-full border p-3 rounded mb-3">
                 <option value="">-- Chọn danh mục --</option>
-                <?php foreach($categories as $c): ?>
-                    <option value="<?= $c['id'] ?>"
-                        <?= $p['category_id'] == $c['id'] ? 'selected' : '' ?>>
-                        <?= $c['name'] ?>
-                    </option>
-                <?php endforeach; ?>
+                <?php renderCategorySelectOptions($categories, $p['category_id']); ?>
             </select>
         </div>
 
