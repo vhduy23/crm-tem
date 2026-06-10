@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $brand_id = $_POST['brand_id'] ?? null;
     $category_id = $_POST['category_id'] ?? null;
     $user_id = (int) $_SESSION['user']['id'];
+    $status = isset($_POST['status']) ? (int)$_POST['status'] : 0;
 
     if (!$name) {
         die('Tên không được để trống');
@@ -25,10 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $slug = uniqueSlug($pdo, $slug);
 
     $stmt = $pdo->prepare("
-        INSERT INTO products(name, slug, description, brand_id, category_id, created_by)
-        VALUES(?,?,?,?,?,?)
+        INSERT INTO products(name, slug, description, brand_id, category_id, created_by, status)
+        VALUES(?,?,?,?,?,?,?)
     ");
-    $stmt->execute([$name, $slug, $desc, $brand_id, $category_id, $user_id]);
+    $stmt->execute([$name, $slug, $desc, $brand_id, $category_id, $user_id, $status]);
 
     $product_id = $pdo->lastInsertId();
 
@@ -114,51 +115,66 @@ function uniqueSlug($pdo, $slug) {
 
 ?>
 
-<div class="bg-white p-6 rounded-xl shadow-md max-w-3xl">
-    <h2 class="text-xl font-bold mb-4">Thêm thiết kế</h2>
+<div class="mb-6">
+    <div class="flex items-center gap-3">
+        <a href="index.php" class="text-gray-500 hover:text-gray-700"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 class="text-lg font-bold text-gray-900">Thêm thiết kế</h2>
+    </div>
+</div>
 
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 max-w-4xl">
     <form method="POST" enctype="multipart/form-data">
-
-        <!-- Tên -->
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Tên thiết kế</label>
         <input name="name" placeholder="Tên thiết kế..."
-            class="w-full border p-3 rounded mb-3">
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
 
-        <!-- Slug -->
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Đường dẫn (Slug)</label>
         <input id="slug" name="slug" placeholder="Đường dẫn..." 
-            class="w-full border p-3 rounded mb-3">
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
 
-
-        <!-- Mô tả -->
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Mô tả</label>
         <textarea name="description" placeholder="Mô tả..."
-            class="w-full border p-3 rounded mb-3"></textarea>
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 min-h-[100px]"></textarea>
 
-        <div class="flex justify-between gap-10">
-            <!-- Brand -->
-            <select name="brand_id" class="w-full border p-3 rounded mb-3">
-                <option value="">-- Chọn thương hiệu --</option>
-                <?php foreach($brands as $b): ?>
-                    <option value="<?= $b['id'] ?>"><?= $b['name'] ?></option>
-                <?php endforeach; ?>
-            </select>
-
-            <!-- Category -->
-            <select name="category_id" class="w-full border p-3 rounded mb-3">
-                <option value="">-- Chọn danh mục --</option>
-                <?php renderCategorySelectOptions($categories); ?>
-            </select>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Thương hiệu</label>
+                <select name="brand_id" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">-- Chọn thương hiệu --</option>
+                    <?php foreach($brands as $b): ?>
+                        <option value="<?= $b['id'] ?>"><?= $b['name'] ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Danh mục</label>
+                <select name="category_id" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <option value="">-- Chọn danh mục --</option>
+                    <?php renderCategorySelectOptions($categories); ?>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
+                <select name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <option value="0">Không công khai</option>
+                    <option value="1">Nội bộ</option>
+                    <option value="2">Công khai</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Upload -->
-        <input type="file" id="imageInput" name="images[]" multiple
-            class="mb-3">
+        <label class="block text-sm font-medium text-gray-700 mb-1.5 mt-2">Upload hình ảnh</label>
+        <input type="file" id="imageInput" name="images[]" multiple class="mb-3 text-sm">
 
         <!-- Preview -->
-        <div id="preview" class="grid grid-cols-4 gap-3 mb-4"></div>
+        <div id="preview" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"></div>
 
-        <button type="submit"
-            class="bg-blue-500 text-white px-5 py-2 rounded">
-            Lưu
-        </button>
+        <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+            <a href="index.php" class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Hủy</a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                Lưu thiết kế
+            </button>
+        </div>
     </form>
 </div>
 
@@ -206,11 +222,11 @@ function renderPreview() {
 
         reader.onload = function(e) {
             preview.innerHTML += `
-                <div class="relative">
-                    <img src="${e.target.result}" class="w-full h-30 object-cover rounded">
-                    <button onclick="removeImage(${index})"
-                        class="absolute top-1 right-1 bg-red-500 text-white px-2 rounded">
-                        ×
+                <div class="relative group">
+                    <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                    <button onclick="removeImage(${index})" type="button"
+                        class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-xmark text-xs"></i>
                     </button>
                 </div>
             `;

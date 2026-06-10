@@ -5,11 +5,16 @@ include 'front/header.php';
 $cat_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $catIds = $cat_id > 0 ? getCategoryFilterIds($pdo, $cat_id) : [];
 $placeholders = $catIds ? implode(',', array_fill(0, count($catIds), '?')) : '0';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$statusFilter = isset($_SESSION['user']) ? "p.status IN (1, 2)" : "p.status = 2";
+
 $stmt = $pdo->prepare("
     SELECT p.*,
     (SELECT image_path FROM product_images WHERE product_id=p.id LIMIT 1) as thumb
     FROM products p
-    WHERE category_id IN ($placeholders)
+    WHERE category_id IN ($placeholders) AND $statusFilter
     ORDER BY id DESC
 ");
 $stmt->execute($catIds);
