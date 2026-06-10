@@ -2,6 +2,9 @@
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/function.php';
 require_once __DIR__ . '/../lib/categories.php';
+
+session_start();
+
 // lấy danh mục
 $catTree = buildCategoryTree(fetchCategories($pdo));
 if(isDetail()){

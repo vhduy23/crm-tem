@@ -1,7 +1,9 @@
 <?php
 require_once 'lib/categories.php';
 require 'front/header.php';
+
 // ===== GET PARAM =====
+
 $keyword = $_GET['q'] ?? '';
 $category_id = isset($_GET['cat']) ? (int)$_GET['cat'] : 0;
 $brand_id = isset($_GET['brand']) ? (int)$_GET['brand'] : 0;
@@ -9,25 +11,35 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max(1, $page);
 $limit = 12;
 $offset = ($page - 1) * $limit;
+$sort = $_GET['sort'] ?? 'newest';
+
 // ===== HELPER: build filter URL =====
+
 function buildFilterUrl($overrides = []) {
-    global $keyword, $category_id, $brand_id;
+    global $keyword, $category_id, $brand_id, $sort;
     $p = [
         'q'     => $overrides['q']     ?? $keyword,
         'cat'   => $overrides['cat']   ?? $category_id,
         'brand' => $overrides['brand'] ?? $brand_id,
         'page'  => $overrides['page']  ?? null,
+        'sort'  => $overrides['sort']  ?? $sort,
     ];
     $parts = [];
     if ($p['q'])     $parts[] = 'q=' . urlencode($p['q']);
     if ($p['cat'])   $parts[] = 'cat=' . (int)$p['cat'];
     if ($p['brand']) $parts[] = 'brand=' . (int)$p['brand'];
+    if ($p['sort'] && $p['sort'] !== 'newest') $parts[] = 'sort=' . urlencode($p['sort']);
     if ($p['page'] && $p['page'] > 1) $parts[] = 'page=' . (int)$p['page'];
     return '?' . implode('&', $parts);
 }
 // ===== WHERE =====
 $conditions = [];
 $params = [];
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$conditions[] = "p.status = 2"; // Chỉ show công khai ở front
 if ($keyword) {
     $conditions[] = "p.name LIKE ?";
     $params[] = "%$keyword%";
@@ -43,11 +55,22 @@ if ($brand_id > 0) {
     $params[] = $brand_id;
 }
 $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+$orderBy = "ORDER BY p.id DESC";
+if ($sort === 'oldest') {
+    $orderBy = "ORDER BY p.id ASC";
+} elseif ($sort === 'name_asc') {
+    $orderBy = "ORDER BY p.name ASC";
+} elseif ($sort === 'name_desc') {
+    $orderBy = "ORDER BY p.name DESC";
+}
+
 // ===== TOTAL =====
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM products p $where");
 $stmt->execute($params);
 $total = $stmt->fetchColumn();
 $totalPages = ceil($total / $limit);
+
 // ===== DATA =====
 $stmt = $pdo->prepare("
     SELECT 
@@ -74,14 +97,16 @@ $stmt = $pdo->prepare("
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN categories cp ON c.parent_id = cp.id
     $where
-    ORDER BY p.id DESC
+    $orderBy
     LIMIT $limit OFFSET $offset
 ");
 $totalPro = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+
 // ===== CATEGORY =====
 $categories = fetchCategories($pdo);
 $categoryTree = buildCategoryTree($categories);
 $cateTotal = $pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NULL")->fetchColumn();
+
 // ===== BRAND =====
 $brandSql = "
     SELECT 
@@ -102,6 +127,8 @@ foreach ($data as &$p) {
         ? explode(',', $p['images']) 
         : [];
 }
+unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
+
 ?>
 <div class="bg-[#F7F8FB] min-h-screen text-[#374368] font-sans ">
     <div class="bg-white border-b border-[#0B2558]/10 px-6 py-2.5">
@@ -109,6 +136,8 @@ foreach ($data as &$p) {
             <a href="/" class="text-[#1a52b5] hover:underline">Trang chủ</a>
             <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
             <span class="text-[#374368] font-medium">Bộ sưu tập thiết kế</span>
+            <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
+            <span class="text-[#374368] font-medium">Session: <?= $_SESSION['user'] ? $_SESSION['user']['name'] : 'Guest' ?></span>
         </div>
     </div>
     <div class="max-w-[1340px] mx-auto px-[10px] pt-7 grid grid-cols-1 lg:grid-cols-[264px_1fr] gap-7 items-start">
@@ -240,10 +269,11 @@ foreach ($data as &$p) {
                         <span class="bg-white text-[#1a52b5] text-[11px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center"><?= $activeFilters ?></span>
                         <?php endif; ?>
                     </button>
-                    <select class="px-3 py-2 rounded-lg border-[1.5px] border-[#0B2558]/[0.18] text-[13px] text-[#374368] bg-white outline-none focus:border-[#1a52b5] transition-colors cursor-pointer">
-                        <option>Mới nhất</option>
-                        <option>Cũ nhất</option>
-                        <option>Tên A–Z</option>
+                    <select onchange="window.location.href=this.value" class="px-3 py-2 rounded-lg border-[1.5px] border-[#0B2558]/[0.18] text-[13px] text-[#374368] bg-white outline-none focus:border-[#1a52b5] transition-colors cursor-pointer">
+                        <option value="<?= buildFilterUrl(['sort' => 'newest', 'page' => 1]) ?>" <?= $sort == 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+                        <option value="<?= buildFilterUrl(['sort' => 'oldest', 'page' => 1]) ?>" <?= $sort == 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                        <option value="<?= buildFilterUrl(['sort' => 'name_asc', 'page' => 1]) ?>" <?= $sort == 'name_asc' ? 'selected' : '' ?>>Tên A–Z</option>
+                        <option value="<?= buildFilterUrl(['sort' => 'name_desc', 'page' => 1]) ?>" <?= $sort == 'name_desc' ? 'selected' : '' ?>>Tên Z–A</option>
                     </select>
                 </div>
             </div>
@@ -280,7 +310,17 @@ foreach ($data as &$p) {
             </div>
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4.5">
                 <?php if(!empty($data)): ?>
+
+
+
+                    <?php 
+                        // echo '<pre>';
+                        // print_r($data); 
+                        // echo '</pre>';  
+                        // die;
+                    ?>
                     <?php foreach($data as $p): ?>
+
                     <article class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 hover:border-[#1a52b5]/25 transition-all duration-300">
                         
                         <div class="relative overflow-hidden">
@@ -322,6 +362,7 @@ foreach ($data as &$p) {
                         </div>
                     </article>
                     <?php endforeach; ?>
+                    <?php unset($p) ?>
                 <?php else: ?>
                     <div class="col-span-full py-16 text-center text-[#8892AA] bg-white rounded-[14px] border border-[#0B2558]/10">
                         <p class="text-lg font-medium">Không tìm thấy thiết kế!</p>
@@ -538,6 +579,7 @@ function openDesignModal(productId) {
         requestAnimationFrame(function() { modal.style.opacity = '1'; });
     });
 }
+
 // ── Custom zoom state ──
 var _dz = { scale:1, panX:0, panY:0, min:1, max:4, dragging:false, lx:0, ly:0, pinching:false, pd:0, ps:1 };
 function _dzImg() {

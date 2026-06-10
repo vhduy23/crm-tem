@@ -11,6 +11,18 @@ if (!$product) {
     die('Không tìm thấy sản phẩm');
 }
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$isLoggedIn = isset($_SESSION['user']);
+
+if ($product['status'] == 0) {
+    die('Sản phẩm không khả dụng (Không công khai)');
+}
+if ($product['status'] == 1 && !$isLoggedIn) {
+    die('Sản phẩm nội bộ. Vui lòng đăng nhập để xem thiết kế này.');
+}
+
 // lấy ảnh
 $stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=?");
 $stmt->execute([$product['id']]);

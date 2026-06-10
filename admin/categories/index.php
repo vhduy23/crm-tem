@@ -9,7 +9,7 @@ include '../partials/header.php';
         <h2 class="text-lg font-bold text-gray-900">Quản lý danh mục</h2>
         <!-- <p class="text-sm text-gray-500 mt-0.5">Hỗ trợ 2 cấp: danh mục cha và danh mục con</p> -->
     </div>
-    <button onclick="openModal()" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors">
+    <button onclick="openModal()" class="size-max inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-colors">
         <i class="fa-solid fa-plus text-xs"></i> Thêm danh mục
     </button>
 </div>
@@ -94,16 +94,16 @@ function renderTable() {
     tree.forEach(parent => {
         rows += `
         <tr class="border-t border-gray-100 bg-slate-50/60">
-            <td class="p-3 text-center text-gray-500">${n++}</td>
-            <td class="p-3">
+            <td class="p-2 text-center text-gray-500">${n++}</td>
+            <td class="p-2">
                 <div class="flex items-center gap-2 font-semibold text-gray-900">
                     <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fa-solid fa-folder"></i></span>
                     ${esc(parent.name)}
                 </div>
             </td>
-            <td class="p-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">Cha</span></td>
-            <td class="p-3 text-center text-gray-400">—</td>
-            <td class="p-3 text-center">
+            <td class="p-2 text-center"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">Cha</span></td>
+            <td class="p-2 text-center text-gray-400">—</td>
+            <td class="p-2 text-center">
                 <button onclick="editItem(${parent.id})" class="text-blue-600 hover:underline text-sm">Sửa</button>
                 <span class="text-gray-300 mx-1">|</span>
                 <button onclick="remove(${parent.id})" class="text-red-500 hover:underline text-sm">Xóa</button>
@@ -113,17 +113,17 @@ function renderTable() {
         parent.children.forEach(child => {
             rows += `
             <tr class="border-t border-gray-50 hover:bg-gray-50/80">
-                <td class="p-3 text-center text-gray-400">${n++}</td>
-                <td class="p-3 pl-10">
+                <td class="p-2 text-center text-gray-400">${n++}</td>
+                <td class="p-2 pl-10">
                     <div class="flex items-center gap-2 text-gray-700">
                         <i class="fa-solid fa-turn-up fa-rotate-90 text-gray-300 text-xs"></i>
                         <span class="w-6 h-6 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center text-[10px]"><i class="fa-solid fa-tag"></i></span>
                         ${esc(child.name)}
                     </div>
                 </td>
-                <td class="p-3 text-center"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">Con</span></td>
-                <td class="p-3 text-center text-sm text-gray-500">${esc(child.parent_name || parent.name)}</td>
-                <td class="p-3 text-center">
+                <td class="p-2 text-center"><span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">Con</span></td>
+                <td class="p-2 text-center text-sm text-gray-500">${esc(child.parent_name || parent.name)}</td>
+                <td class="p-2 text-center">
                     <button onclick="editItem(${child.id})" class="text-blue-600 hover:underline text-sm">Sửa</button>
                     <span class="text-gray-300 mx-1">|</span>
                     <button onclick="remove(${child.id})" class="text-red-500 hover:underline text-sm">Xóa</button>
@@ -136,11 +136,11 @@ function renderTable() {
     <table class="w-full text-sm">
         <thead>
             <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <th class="p-3 text-center w-14">STT</th>
-                <th class="p-3 text-left">Tên danh mục</th>
-                <th class="p-3 text-center w-24">Cấp</th>
-                <th class="p-3 text-center w-40">Thuộc</th>
-                <th class="p-3 text-center w-32">Thao tác</th>
+                <th class="p-2 text-center w-14">STT</th>
+                <th class="p-2 text-left">Tên danh mục</th>
+                <th class="p-2 text-center w-24">Cấp</th>
+                <th class="p-2 text-center w-40">Thuộc</th>
+                <th class="p-2 text-center w-32">Thao tác</th>
             </tr>
         </thead>
         <tbody>${rows}</tbody>
