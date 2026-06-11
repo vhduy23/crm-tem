@@ -135,14 +135,20 @@ function categoryGroupIsExpanded(array $parent, int $activeCategoryId): bool
     return false;
 }
 
-function countCategoryProducts(PDO $pdo, int $categoryId, bool $includeChildren = true): int
+function countCategoryProducts(PDO $pdo, int $categoryId, bool $isLogin = false, bool $includeChildren = true): int
 {
     ensureCategoryParentColumn($pdo);
+
+    if ($isLogin) {
+        $status = "status IN (1, 2)";
+    } else {
+        $status = "status = 2";
+    }
 
     $ids = $includeChildren ? getCategoryFilterIds($pdo, $categoryId) : [$categoryId];
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id IN ($placeholders) AND status = 2");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id IN ($placeholders) AND $status");
     $stmt->execute($ids);
 
     return (int) $stmt->fetchColumn();

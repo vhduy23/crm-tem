@@ -39,7 +39,21 @@ $params = [];
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$conditions[] = "p.status = 2"; // Chỉ show công khai ở front
+
+if (empty($_SESSION['user']['id'])) {
+    // Khách
+    $isLogin = false;
+    $whereCate = "status = 2";
+    $whereBrand  =  "p.status = 2";
+    $conditions[] = "p.status = 2";
+} else {
+    // Đã đăng nhập
+    $isLogin = true;
+    $whereCate = "status IN (1, 2)";
+    $whereBrand  = "p.status IN (1, 2)";
+    $conditions[] = "p.status IN (1, 2)";
+}
+
 if ($keyword) {
     $conditions[] = "p.name LIKE ?";
     $params[] = "%$keyword%";
@@ -100,7 +114,8 @@ $stmt = $pdo->prepare("
     $orderBy
     LIMIT $limit OFFSET $offset
 ");
-$totalPro = $pdo->query("SELECT COUNT(*) FROM products WHERE status = 2")->fetchColumn();
+
+$totalPro = $pdo->query("SELECT COUNT(*) FROM products WHERE $whereCate ")->fetchColumn();
 
 // ===== CATEGORY =====
 $categories = fetchCategories($pdo);
@@ -108,13 +123,14 @@ $categoryTree = buildCategoryTree($categories);
 $cateTotal = $pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NULL")->fetchColumn();
 
 // ===== BRAND =====
+
 $brandSql = "
     SELECT 
         b.id, 
         b.name, 
         COUNT(p.id) as product_count 
     FROM brands b
-    LEFT JOIN products p ON b.id = p.brand_id AND p.status = 2
+    LEFT JOIN products p ON b.id = p.brand_id AND $whereBrand
     GROUP BY b.id
     ORDER BY b.name ASC
 ";

@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'name'     => $user['name'] ?: $user['username'],
                     'username' => $user['username'],
                     'role_id'  => (int) $user['role_id'],
+                    'status'   => (int) $user['status'],    // 0: Chờ phê duyệt, 1: Đã phê duyệt, 2: Bị khóa
                 ];
 
                 header("Location: /");
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img src="/uploads/260515.webp" alt="A Chau Group Logo" class="h-10 mx-auto filter brightness-[1.05]">
             </a>
             <h2 class="text-white text-lg font-bold">Đăng nhập thành viên</h2>
-            <p class="text-blue-200/80 text-xs mt-1">Truy cập bộ sưu tập thiết kế và tính năng in ấn</p>
+            <p class="text-blue-200/80 text-xs mt-1">Để xem thêm các mẫu thiết kế cho thành viên</p>
         </div>
 
         <!-- Nội dung Form -->
