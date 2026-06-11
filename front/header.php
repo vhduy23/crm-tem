@@ -45,7 +45,7 @@ if(isDetail()){
                 <a href="/" class="hover:text-[#e1aa58] text-white font-medium">Trang chủ</a>
                 <?php foreach($catTree as $parent): ?>
                     <div class="relative group">
-                        <a href="/category.php?id=<?= $parent['id'] ?>"
+                        <a href="/?cat=<?= $parent['id'] ?>"
                            class="hover:text-[#e1aa58] text-white font-medium">
                             <?= htmlspecialchars($parent['name']) ?>
                         </a>
