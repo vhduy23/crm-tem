@@ -270,7 +270,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                     </button>
                     <select onchange="window.location.href=this.value" class="px-3 py-2 rounded-lg border-[1.5px] border-[#0B2558]/[0.18] text-[13px] text-[#374368] bg-white outline-none focus:border-[#1a52b5] transition-colors cursor-pointer">
                         <option value="<?= buildFilterUrl(['sort' => 'newest', 'page' => 1]) ?>" <?= $sort == 'newest' ? 'selected' : '' ?>>Mới nhất</option>
-                        <option value="<?= buildFilterUrl(['sort' => 'oldest', 'page' => 1]) ?>" <?= $sort == 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                        <option value="<?= buildFilterUrl(['sort' => 'oldest', 'page' => 1]) ?>" <?= $sort == 'oldest' ? 'selected' : ''  ?>>Cũ nhất</option>
                         <option value="<?= buildFilterUrl(['sort' => 'name_asc', 'page' => 1]) ?>" <?= $sort == 'name_asc' ? 'selected' : '' ?>>Tên A–Z</option>
                         <option value="<?= buildFilterUrl(['sort' => 'name_desc', 'page' => 1]) ?>" <?= $sort == 'name_desc' ? 'selected' : '' ?>>Tên Z–A</option>
                     </select>
