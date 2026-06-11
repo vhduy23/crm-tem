@@ -11,7 +11,7 @@ if ($_SESSION['user']['role_id'] != 1) {
     <h1 class="text-xl font-bold">Quản lý User</h1>
 
     <button onclick="openModal()" 
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 hidden">
         + Thêm
     </button>
 </div>
@@ -74,8 +74,8 @@ async function loadUsers() {
         <tr class="bg-gray-100">
             <th class="p-2">ID</th>
             <th class="p-2">Username</th>
-            <th class="p-2">Role</th>
-            <th class="p-2">Action</th>
+            <th class="p-2">Phân quyền</th>
+            <th class="p-2">Thao tác</th>
         </tr>`;
 
     data.forEach(u => {
