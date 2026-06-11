@@ -310,14 +310,6 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4.5">
                 <?php if(!empty($data)): ?>
 
-
-
-                    <?php 
-                        // echo '<pre>';
-                        // print_r($data); 
-                        // echo '</pre>';  
-                        // die;
-                    ?>
                     <?php foreach($data as $p): ?>
 
                     <article class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 hover:border-[#1a52b5]/25 transition-all duration-300">
@@ -333,6 +325,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                             <span class="absolute top-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
                                 <?= htmlspecialchars($p['cate_name']) ?>
                             </span>
+                            <span class="absolute top-2.5 right-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Đã kiểm duyệt</span>
                             <?php endif; ?>
                         </div>
                         <div class="p-3.5 md:p-4">
