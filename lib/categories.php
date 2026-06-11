@@ -142,7 +142,7 @@ function countCategoryProducts(PDO $pdo, int $categoryId, bool $includeChildren 
     $ids = $includeChildren ? getCategoryFilterIds($pdo, $categoryId) : [$categoryId];
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id IN ($placeholders)");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id IN ($placeholders) AND status = 2");
     $stmt->execute($ids);
 
     return (int) $stmt->fetchColumn();
