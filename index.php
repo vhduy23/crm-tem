@@ -355,6 +355,9 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                                 <?= htmlspecialchars($p['cate_name']) ?>
                             </span>
                             <span class="absolute top-2.5 right-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Đã kiểm duyệt</span>
+                            <span class="absolute bottom-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px]  text-[#0B2558] pointer-events-none">
+                                <?= $p['status'] === 1 ? '<i class="fa-solid fa-star"></i>' : '' ?>
+                            </span>
                             <?php endif; ?>
                         </div>
                         <div class="p-3.5 md:p-4">
