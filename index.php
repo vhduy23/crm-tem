@@ -100,7 +100,7 @@ $stmt = $pdo->prepare("
     $orderBy
     LIMIT $limit OFFSET $offset
 ");
-$totalPro = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+$totalPro = $pdo->query("SELECT COUNT(*) FROM products WHERE status = 2")->fetchColumn();
 
 // ===== CATEGORY =====
 $categories = fetchCategories($pdo);
@@ -114,7 +114,7 @@ $brandSql = "
         b.name, 
         COUNT(p.id) as product_count 
     FROM brands b
-    LEFT JOIN products p ON b.id = p.brand_id
+    LEFT JOIN products p ON b.id = p.brand_id AND p.status = 2
     GROUP BY b.id
     ORDER BY b.name ASC
 ";
