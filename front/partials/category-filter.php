@@ -21,7 +21,7 @@ $filterPrefix = $filterPrefix ?? 'desktop';
     <?php foreach ($categoryTree as $parent):
         $hasChildren = !empty($parent['children']);
         $parentActive = $category_id === (int) $parent['id'];
-        $parentCount = countCategoryProducts($pdo, (int) $parent['id']);
+        $parentCount = countCategoryProducts($pdo, (int) $parent['id'], $isLogin);
         $isExpanded = $hasChildren && categoryGroupIsExpanded($parent, $category_id);
     ?>
         <?php if (!$hasChildren): ?>
@@ -58,7 +58,7 @@ $filterPrefix = $filterPrefix ?? 'desktop';
                  <?= $isExpanded ? '' : 'style="display:none"' ?>>
                 <?php foreach ($parent['children'] as $child):
                     $childActive = $category_id === (int) $child['id'];
-                    $childCount = countCategoryProducts($pdo, (int) $child['id'], false);
+                    $childCount = countCategoryProducts($pdo, (int) $child['id'], $isLogin, false);
                 ?>
                 <a href="<?= buildFilterUrl(['cat' => $child['id']]) ?>"
                    class="cat-filter-link cat-filter-link--child flex items-center justify-between p-[7px_12px_7px_34px] rounded-[9px] transition-colors border-[1.5px] no-underline

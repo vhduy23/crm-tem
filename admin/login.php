@@ -27,19 +27,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password'])) {
-  
-                unset($_SESSION[$failKey]);
+                if (isset($user['status']) && (int)$user['status'] !== 1) {
+                    $error = "Tài khoản của bạn chưa được kích hoạt hoặc đã bị khóa.";
+                } else {
+                    unset($_SESSION[$failKey]);
 
-                session_regenerate_id(true);
+                    session_regenerate_id(true);
 
-                $_SESSION['user'] = [
-                    'id'       => (int) $user['id'],
-                    'name'     => $user['name'],
-                    'username' => $user['username'],
-                    'role_id'  => (int) $user['role_id'],
-                ];
-                header("Location: /admin/dashboard.php");
-                exit;
+                    $_SESSION['user'] = [
+                        'id'       => (int) $user['id'],
+                        'name'     => $user['name'],
+                        'username' => $user['username'],
+                        'role_id'  => (int) $user['role_id'],
+                    ];
+                    header("Location: /admin/dashboard.php");
+                    exit;
+                }
             } else {
 
                 $_SESSION[$failKey]['count'] = $failCount + 1;

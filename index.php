@@ -39,7 +39,21 @@ $params = [];
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$conditions[] = "p.status = 2"; // Chỉ show công khai ở front
+
+if (empty($_SESSION['user']['id'])) {
+    // Khách
+    $isLogin = false;
+    $whereCate = "status = 2";
+    $whereBrand  =  "p.status = 2";
+    $conditions[] = "p.status = 2";
+} else {
+    // Đã đăng nhập
+    $isLogin = true;
+    $whereCate = "status IN (1, 2)";
+    $whereBrand  = "p.status IN (1, 2)";
+    $conditions[] = "p.status IN (1, 2)";
+}
+
 if ($keyword) {
     $conditions[] = "p.name LIKE ?";
     $params[] = "%$keyword%";
@@ -100,7 +114,8 @@ $stmt = $pdo->prepare("
     $orderBy
     LIMIT $limit OFFSET $offset
 ");
-$totalPro = $pdo->query("SELECT COUNT(*) FROM products WHERE status = 2")->fetchColumn();
+
+$totalPro = $pdo->query("SELECT COUNT(*) FROM products WHERE $whereCate ")->fetchColumn();
 
 // ===== CATEGORY =====
 $categories = fetchCategories($pdo);
@@ -108,13 +123,14 @@ $categoryTree = buildCategoryTree($categories);
 $cateTotal = $pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NULL")->fetchColumn();
 
 // ===== BRAND =====
+
 $brandSql = "
     SELECT 
         b.id, 
         b.name, 
         COUNT(p.id) as product_count 
     FROM brands b
-    LEFT JOIN products p ON b.id = p.brand_id AND p.status = 2
+    LEFT JOIN products p ON b.id = p.brand_id AND $whereBrand
     GROUP BY b.id
     ORDER BY b.name ASC
 ";
@@ -132,11 +148,24 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
 ?>
 <div class="bg-[#F7F8FB] min-h-screen text-[#374368] font-sans ">
     <div class="bg-white border-b border-[#0B2558]/10 px-6 py-2.5">
-        <div class="max-w-[1340px] mx-auto flex items-center gap-2 text-[12.5px] text-[#8892AA]">
-            <a href="/" class="text-[#1a52b5] hover:underline">Trang chủ</a>
-            <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
-            <span class="text-[#374368] font-medium">Bộ sưu tập thiết kế</span>
-            <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
+        <div class="max-w-[1340px] mx-auto flex items-center justify-between gap-2 text-[12.5px] text-[#8892AA]">
+            <div class="flex items-center gap-2">
+                <a href="/" class="text-[#1a52b5] hover:underline">Trang chủ</a>
+                <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
+                <span class="text-[#374368] font-medium">Bộ sưu tập thiết kế</span>
+                <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
+            </div>
+            <form action="/index.php" method="GET" class="flex justify-center gap-2 m-0">
+                <input 
+                    type="text" 
+                    name="q"
+                    placeholder="Tìm thiết kế..."
+                    class="border border-[#0B2558] bg-white/10 text-#0B2558 placeholder-white/50 px-3 py-1 rounded text-sm focus:outline-none focus:border-[#e1aa58] transition-colors"
+                >
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm transition-colors">
+                    Tìm
+                </button>
+            </form>
         </div>
     </div>
     <div class="max-w-[1340px] mx-auto px-[10px] pt-7 grid grid-cols-1 lg:grid-cols-[264px_1fr] gap-7 items-start">

@@ -126,7 +126,7 @@ $categories = fetchCategories($pdo);
                     <th class="p-3 font-medium text-center">Thương hiệu</th>
                     <th class="p-3 font-medium text-center">Danh mục</th>
                     <th class="p-3 font-medium text-center">Trạng thái</th>
-                    <th class="p-3 font-medium text-center">Action</th>
+                    <th class="p-3 font-medium text-center">Thao tác</th>
                 </tr>
             </thead>
 
