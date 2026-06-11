@@ -137,7 +137,6 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
             <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
             <span class="text-[#374368] font-medium">Bộ sưu tập thiết kế</span>
             <span class="text-[#0b255861]/[0.18] text-[13px] font-bold">›</span>
-            <span class="text-[#374368] font-medium">Session: <?= $_SESSION['user'] ? $_SESSION['user']['name'] : 'Guest' ?></span>
         </div>
     </div>
     <div class="max-w-[1340px] mx-auto px-[10px] pt-7 grid grid-cols-1 lg:grid-cols-[264px_1fr] gap-7 items-start">
