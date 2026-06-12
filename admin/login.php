@@ -29,7 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user && password_verify($password, $user['password'])) {
                 if (isset($user['status']) && (int)$user['status'] !== 1) {
                     $error = "Tài khoản của bạn chưa được kích hoạt hoặc đã bị khóa.";
-                } else {
+                }elseif(isset($user['role_id']) && (int)$user['role_id'] === 9){
+                    $error = "Permission denied.";
+                }else {
                     unset($_SESSION[$failKey]);
 
                     session_regenerate_id(true);

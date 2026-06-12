@@ -40,18 +40,23 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (empty($_SESSION['user']['id'])) {
-    // Khách
-    $isLogin = false;
-    $whereCate = "status = 2";
-    $whereBrand  =  "p.status = 2";
-    $conditions[] = "p.status = 2";
-} else {
+if (!empty($_SESSION['member']['id']) || !empty($_SESSION['user']['id'])) {
+
+    // echo 'đã đăng nhập';
+    // die;
+
     // Đã đăng nhập
     $isLogin = true;
     $whereCate = "status IN (1, 2)";
     $whereBrand  = "p.status IN (1, 2)";
     $conditions[] = "p.status IN (1, 2)";
+} else {
+
+    // Khách
+    $isLogin = false;
+    $whereCate = "status = 2";
+    $whereBrand  =  "p.status = 2";
+    $conditions[] = "p.status = 2";
 }
 
 if ($keyword) {
@@ -160,7 +165,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                     type="text" 
                     name="q"
                     placeholder="Tìm thiết kế..."
-                    class="border border-[#0B2558] bg-white/10 text-#0B2558 placeholder-white/50 px-3 py-1 rounded text-sm focus:outline-none focus:border-[#e1aa58] transition-colors"
+                    class="border border-gray-400 bg-white/10 text-#0B2558 placeholder-gray-400 px-3 py-1 rounded text-sm focus:outline-none focus:border-[#e1aa58] transition-colors"
                 >
                 <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm transition-colors">
                     Tìm
@@ -355,6 +360,9 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                                 <?= htmlspecialchars($p['cate_name']) ?>
                             </span>
                             <span class="absolute top-2.5 right-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Đã kiểm duyệt</span>
+                            <span class="absolute bottom-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px]  text-[#0B2558] pointer-events-none">
+                                <?= $p['status'] === 1 ? '<i class="fa-solid fa-star"></i>' : '' ?>
+                            </span>
                             <?php endif; ?>
                         </div>
                         <div class="p-3.5 md:p-4">
