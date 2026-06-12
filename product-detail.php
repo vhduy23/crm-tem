@@ -14,7 +14,7 @@ if (!$product) {
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$isLoggedIn = isset($_SESSION['user']);
+$isLoggedIn = isset($_SESSION['member']) || isset($_SESSION['user']);
 
 if ($product['status'] == 0) {
     die('Sản phẩm không khả dụng (Không công khai)');

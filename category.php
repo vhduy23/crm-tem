@@ -8,7 +8,7 @@ $placeholders = $catIds ? implode(',', array_fill(0, count($catIds), '?')) : '0'
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$statusFilter = isset($_SESSION['user']) ? "p.status IN (1, 2)" : "p.status = 2";
+$statusFilter = (isset($_SESSION['member']) || isset($_SESSION['user'])) ? "p.status IN (1, 2)" : "p.status = 2";
 
 $stmt = $pdo->prepare("
     SELECT p.*,
