@@ -7,6 +7,7 @@ require 'partials/header.php';
 
 $userName = htmlspecialchars($_SESSION['user']['name'] ?? 'Admin');
 
+
 // ===== STATS =====
 $totalProducts = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
 $totalUsers    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
