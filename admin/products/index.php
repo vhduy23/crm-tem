@@ -80,6 +80,10 @@ $stmt->execute();
 
 // ===== LOAD CATEGORY =====
 $categories = fetchCategories($pdo);
+
+
+print_r($_SESSION['csrf_token']);
+// die;
 ?>
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
