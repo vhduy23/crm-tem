@@ -82,7 +82,7 @@ $stmt->execute();
 $categories = fetchCategories($pdo);
 
 
-print_r($_SESSION['csrf_token']);
+// print_r($_SESSION['csrf_token']);
 // die;
 ?>
 
