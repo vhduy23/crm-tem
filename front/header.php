@@ -5,16 +5,20 @@ require_once __DIR__ . '/../lib/categories.php';
 
 session_start();
 
-$isLogin = false;
-if (isset($_SESSION['member']) || isset($_SESSION['user'])) {
-    $isLogin = true;
-    if (!isset($_SESSION['member'])) {
-        $_SESSION['member'] = $_SESSION['user'];
+
+    $isLogin = false;
+    if (isset($_SESSION['member']) || isset($_SESSION['user'])) {
+        $isLogin = true;
+        if (!isset($_SESSION['member'])) {
+            $_SESSION['member'] = $_SESSION['user'];
+        }
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['user'] = $_SESSION['member'];
+        }
     }
-    if (!isset($_SESSION['user'])) {
-        $_SESSION['user'] = $_SESSION['member'];
-    }
-}
+
+
+
 
 // lấy danh mục
 $catTree = buildCategoryTree(fetchCategories($pdo));

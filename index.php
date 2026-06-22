@@ -2,8 +2,6 @@
 require_once 'lib/categories.php';
 require 'front/header.php';
 
-
-
 // ===== GET PARAM =====
 
 $keyword = $_GET['q'] ?? '';
@@ -43,9 +41,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!empty($_SESSION['member']['id']) || !empty($_SESSION['user']['id'])) {
-
-    // echo 'đã đăng nhập';
-    // die;
 
     // Đã đăng nhập
     $isLogin = true;
