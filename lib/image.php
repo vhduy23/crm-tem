@@ -55,7 +55,7 @@ function processImage($filePath) {
     $angle = 45; // Độ nghiêng như trong hình image_afc362.jpg
     
     // Màu trắng với độ trong suốt cao (Alpha từ 0-127, 100 là khá mờ)
-    $color = imagecolorallocatealpha($image, 255, 255, 255, 50);
+    $color = imagecolorallocatealpha($image, 255, 255, 255, 150);
     
     $font = __DIR__ . '/Roboto-Italic.ttf';
 
