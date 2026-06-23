@@ -42,9 +42,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
 if (!empty($_SESSION['member']['id']) || !empty($_SESSION['user']['id'])) {
 
-    // echo 'đã đăng nhập';
-    // die;
-
     // Đã đăng nhập
     $isLogin = true;
     $whereCate = "status IN (1, 2)";
@@ -509,6 +506,7 @@ $_modalProducts = array_map(function($p) {
     </div>
   </div>
 </div>
+
 <!-- Category filter + Mobile Filter JS -->
 <script>
 document.addEventListener('click', function (e) {
@@ -556,6 +554,7 @@ function closeMobileFilter() {
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
+
 // ===== Design Popup =====
 var _dSwiper = null;
 function openDesignModal(productId) {
@@ -569,6 +568,7 @@ function openDesignModal(productId) {
     var detailUrl = '/thiet-ke/' + product.slug;
     document.getElementById('modalDetailLink').href = detailUrl;
     document.getElementById('modalDetailLinkMobile').href = detailUrl;
+    
     // Destroy previous Swiper synchronously before rebuilding slides
     if (_dSwiper) { try { _dSwiper.destroy(true, false); } catch(e){} _dSwiper = null; }
 
@@ -637,21 +637,25 @@ function _dzReset() { _dz.scale=1; _dz.panX=0; _dz.panY=0; _dzApply(false); _upd
 function dZoomIn()    { _dzSetScale(_dz.scale + 0.5); }
 function dZoomOut()   { _dzSetScale(_dz.scale - 0.5); }
 function dZoomReset() { _dzReset(); }
+
 // Attach zoom events once on the swiper element
 (function() {
     var el = document.querySelector('.designModalSwiper');
     if (!el) return;
+
     // Scroll wheel
     el.addEventListener('wheel', function(e) {
         if (document.getElementById('designModal').style.display === 'none') return;
         e.preventDefault();
         _dzSetScale(_dz.scale + (e.deltaY < 0 ? 0.25 : -0.25), true);
     }, { passive: false });
+
     // Double-click toggle
     el.addEventListener('dblclick', function(e) {
         if (document.getElementById('designModal').style.display === 'none') return;
         _dz.scale > 1.01 ? _dzReset() : _dzSetScale(2);
     });
+
     // Mouse drag pan
     el.addEventListener('mousedown', function(e) {
         if (_dz.scale <= 1.01) return;
@@ -671,6 +675,7 @@ function dZoomReset() { _dzReset(); }
         _dz.dragging = false;
         var img = _dzImg(); if (img) img.classList.remove('is-panning');
     });
+
     // Touch pinch + pan
     el.addEventListener('touchstart', function(e) {
         if (document.getElementById('designModal').style.display === 'none') return;
@@ -708,8 +713,6 @@ function closeDesignModal() {
     setTimeout(function() {
         modal.style.display = 'none';
         document.body.style.overflow = '';
-        // Don't destroy Swiper here — it corrupts the container.
-        // Swiper is destroyed in openDesignModal before re-init.
     }, 220);
 }
 function _updateZoomBadge(scale) {
@@ -717,6 +720,7 @@ function _updateZoomBadge(scale) {
     var el = document.getElementById('zoomLevelBadge');
     if (el) el.textContent = pct + '%';
 }
+
 // Event delegation: open popup
 document.addEventListener('click', function(e) {
     var trigger = e.target.closest('.open-design-popup');
@@ -725,6 +729,7 @@ document.addEventListener('click', function(e) {
         openDesignModal(trigger.dataset.productId);
     }
 });
+
 // Close on ESC
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeDesignModal();

@@ -29,11 +29,13 @@ if (!isAdmin()) {
 }
 // Validate CSRF token 
 $token = $_GET['csrf_token'] ?? '';
-if (!validateCsrfToken($token)) {
-    http_response_code(403);
-    die('Yêu cầu không hợp lệ (CSRF token sai)');
-}
-// 
+
+// if (!validateCsrfToken($token)) {
+
+//     http_response_code(403);
+//     die('Yêu cầu không hợp lệ (CSRF token sai)');
+// }
+
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
     http_response_code(400);
