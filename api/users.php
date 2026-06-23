@@ -13,7 +13,7 @@ if ($method === 'GET') {
         jsonError('Bạn không có quyền truy cập', 403);
     }
     $stmt = $pdo->query("
-        SELECT u.id, u.name, u.username, u.role_id, r.name as role_name
+        SELECT u.id, u.name, u.username, u.role_id, u.status, r.name as role_name
         FROM users u
         LEFT JOIN roles r ON u.role_id = r.id
         ORDER BY u.id ASC
@@ -35,6 +35,8 @@ if ($method === 'POST') {
     // $name    = trim($data['name'] ?? '');
     $username    = trim($data['username'] ?? '');
     $role_id = (int)($data['role_id'] ?? 0);
+    $status = isset($data['status']) ? (int)$data['status'] : 1;
+
     if (empty($username)) {
         jsonError('Tên đăng nhập không được để trống');
     }
@@ -50,17 +52,17 @@ if ($method === 'POST') {
             $pass = password_hash($data['password'], PASSWORD_BCRYPT);
             $stmt = $pdo->prepare("
                 UPDATE users 
-                SET username=?, role_id=?, password=? 
+                SET username=?, role_id=?, password=?, status=? 
                 WHERE id=?
             ");
-            $stmt->execute([$username, $role_id, $pass, $id]);
+            $stmt->execute([$username, $role_id, $pass, $status, $id]);
         } else {
             $stmt = $pdo->prepare("
                 UPDATE users 
-                SET username=?, role_id=? 
+                SET username=?, role_id=?, status=? 
                 WHERE id=?
             ");
-            $stmt->execute([$username, $role_id, $id]);
+            $stmt->execute([$username, $role_id, $status, $id]);
         }
     }
     // CREATE
@@ -75,10 +77,10 @@ if ($method === 'POST') {
         }
         $pass = password_hash($data['password'], PASSWORD_BCRYPT);
         $stmt = $pdo->prepare("
-            INSERT INTO users(username, password, role_id)
-            VALUES(?, ?, ?)
+            INSERT INTO users(username, password, role_id, status)
+            VALUES(?, ?, ?, ?)
         ");
-        $stmt->execute([$username, $pass, $role_id]);
+        $stmt->execute([$username, $pass, $role_id, $status]);
     }
     // Trả về JSON thành công thay vì chuỗi "ok"
     jsonSuccess('Thao tác thành công');
