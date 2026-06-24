@@ -54,6 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (move_uploaded_file($tmp, $png)) {
 
                     $webpPath = processImage($png);
+                    if ($webpPath === false) {
+                        if (file_exists($png)) {
+                            unlink($png);
+                        }
+                        die("Lỗi: Không thể xử lý ảnh '{$_FILES['images']['name'][$k]}'. Có thể ảnh được xuất ở định dạng không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng cấu hình KeyShot để xuất ảnh dưới dạng JPEG hoặc PNG 8-bit thông thường trước khi tải lên.");
+                    }
 
                     // FIX: chỉ lưu URL
                     $webp = '/uploads/products/' . basename($webpPath);
@@ -208,8 +214,57 @@ function hideLoading() {
 <script>
 let filesArr = [];
 
-document.getElementById('imageInput').addEventListener('change', function(e) {
-    filesArr = Array.from(e.target.files);
+function convertImageTo8Bit(file) {
+    return new Promise((resolve) => {
+        if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+            resolve(file);
+            return;
+        }
+
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = function() {
+            URL.revokeObjectURL(img.src);
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const exportType = file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+            canvas.toBlob(function(blob) {
+                if (blob) {
+                    const convertedFile = new File([blob], file.name, { type: exportType });
+                    resolve(convertedFile);
+                } else {
+                    resolve(file);
+                }
+            }, exportType, 0.95);
+        };
+        img.onerror = function() {
+            resolve(file);
+        };
+    });
+}
+
+document.getElementById('imageInput').addEventListener('change', async function(e) {
+    showLoading('Đang xử lý định dạng ảnh...');
+    
+    const originalFiles = Array.from(e.target.files);
+    const processedFiles = [];
+    
+    for (let file of originalFiles) {
+        const processed = await convertImageTo8Bit(file);
+        processedFiles.push(processed);
+    }
+    
+    filesArr = processedFiles;
+    
+    const dt = new DataTransfer();
+    filesArr.forEach(f => dt.items.add(f));
+    document.getElementById('imageInput').files = dt.files;
+    
+    hideLoading();
     renderPreview();
 });
 

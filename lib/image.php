@@ -59,7 +59,7 @@ function processImage($filePath) {
     
     $font = __DIR__ . '/Roboto-Italic.ttf';
 
-    if (file_exists($font)) {
+    if (file_exists($font) && function_exists('imagettftext')) {
         // Khoảng cách giữa các chữ (tùy chỉnh theo ý bạn)
         $stepX = 300; 
         $stepY = 250;
@@ -73,14 +73,23 @@ function processImage($filePath) {
         }
     }
 
-    // 4. Lưu file WEBP
-    $newPath = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $filePath);
-    imagewebp($image, $newPath, 80);
+    // 4. Lưu file hình ảnh (Hỗ trợ WebP, nếu không hỗ trợ thì fallback lưu đè định dạng cũ JPG/PNG)
+    if (function_exists('imagewebp')) {
+        $newPath = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $filePath);
+        imagewebp($image, $newPath, 80);
+    } else {
+        $newPath = $filePath;
+        if ($extension === 'png') {
+            imagepng($image, $newPath);
+        } else {
+            imagejpeg($image, $newPath, 85);
+        }
+    }
 
     imagedestroy($image);
 
-    // 5. Xóa file gốc
-    if (file_exists($filePath)) {
+    // 5. Xóa file gốc (chỉ xóa nếu lưu ra file WebP mới khác file gốc)
+    if ($newPath !== $filePath && file_exists($filePath)) {
         unlink($filePath);
     }
 
