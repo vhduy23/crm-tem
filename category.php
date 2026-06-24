@@ -12,7 +12,7 @@ $statusFilter = (isset($_SESSION['member']) || isset($_SESSION['user'])) ? "p.st
 
 $stmt = $pdo->prepare("
     SELECT p.*,
-    (SELECT image_path FROM product_images WHERE product_id=p.id LIMIT 1) as thumb
+    (SELECT image_path FROM product_images WHERE product_id=p.id ORDER BY sort_order ASC, id ASC LIMIT 1) as thumb
     FROM products p
     WHERE category_id IN ($placeholders) AND $statusFilter
     ORDER BY id DESC

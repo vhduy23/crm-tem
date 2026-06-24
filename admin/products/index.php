@@ -55,12 +55,13 @@ $stmt = $pdo->prepare("
                WHEN cp.name IS NOT NULL THEN CONCAT(cp.name, ' › ', c.name)
                ELSE c.name
            END as category_name,
-           (
-               SELECT image_path 
-               FROM product_images 
-               WHERE product_id = p.id 
-               LIMIT 1
-           ) as thumb
+            (
+                SELECT image_path 
+                FROM product_images 
+                WHERE product_id = p.id 
+                ORDER BY sort_order ASC, id ASC
+                LIMIT 1
+            ) as thumb
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id

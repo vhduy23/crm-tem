@@ -12,7 +12,7 @@ $stmt->execute([$id]);
 $p = $stmt->fetch();
 
 // lấy images
-$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=?");
+$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=? ORDER BY sort_order ASC, id ASC");
 $stmt->execute([$id]);
 $images = $stmt->fetchAll();
 
@@ -35,6 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id=?
     ");
     $stmt->execute([$name, $desc, $brand_id, $category_id, $status, $id]);
+
+    // cập nhật thứ tự các ảnh cũ
+    $currentMaxSort = 0;
+    if (isset($_POST['image_order']) && !empty($_POST['image_order'])) {
+        $imageOrder = explode(',', $_POST['image_order']);
+        $sort = 1;
+        foreach ($imageOrder as $imgId) {
+            $imgId = (int)$imgId;
+            if ($imgId > 0) {
+                $stmt = $pdo->prepare("UPDATE product_images SET sort_order = ? WHERE id = ? AND product_id = ?");
+                $stmt->execute([$sort, $imgId, $id]);
+                $currentMaxSort = $sort;
+                $sort++;
+            }
+        }
+    }
 
     // upload ảnh mới
     $uploadDir = __DIR__ . '/../../uploads/products/';
@@ -62,11 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $webp = '/uploads/products/' . basename($webpPath);
 
+                    $newSortOrder = $currentMaxSort + 1;
                     $stmt = $pdo->prepare("
-                        INSERT INTO product_images(product_id, image_path)
-                        VALUES(?,?)
+                        INSERT INTO product_images(product_id, image_path, sort_order)
+                        VALUES(?,?,?)
                     ");
-                    $stmt->execute([$id, $webp]);
+                    $stmt->execute([$id, $webp, $newSortOrder]);
+                    $currentMaxSort = $newSortOrder;
                 }
             }
         }
@@ -128,12 +146,14 @@ include '../partials/header.php';
 
         <!-- Ảnh đã có -->
         <div class="mb-4 p-4 border border-gray-100 rounded-xl bg-gray-50/50">
-            <h3 class="text-sm font-medium text-gray-700 mb-3">Ảnh hiện tại</h3>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <h3 class="text-sm font-medium text-gray-700 mb-1">Ảnh hiện tại</h3>
+            <p class="text-xs text-gray-400 mb-3">Kéo thả ảnh để thay đổi thứ tự sắp xếp.</p>
+            <input type="hidden" name="image_order" id="imageOrderInput" value="<?= implode(',', array_column($images, 'id')) ?>">
+            <div id="imageSortContainer" class="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <?php foreach($images as $img): ?>
-                    <div class="relative group">
+                    <div class="relative group cursor-grab active:cursor-grabbing border-2 border-transparent rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200" draggable="true" data-id="<?= $img['id'] ?>">
                         <img src="<?= $img['image_path'] ?>" 
-                             class="w-full h-24 object-cover rounded-lg border border-gray-200">
+                             class="w-full h-24 object-cover rounded-lg border border-gray-200 pointer-events-none">
                         <button type="button"
                             onclick="deleteImage(<?= $img['id'] ?>, this)"
                             class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
@@ -289,6 +309,7 @@ function deleteImage(id, el) {
     .then(res => res.text())
     .then(() => {
         el.parentElement.remove();
+        updateImageOrder();
     });
 }
 
@@ -296,5 +317,79 @@ function deleteImage(id, el) {
 document.querySelector('form').addEventListener('submit', function() {
     showLoading('Đang xử lý...');
 });
+
+// Drag and drop sorting logic
+const sortContainer = document.getElementById('imageSortContainer');
+const orderInput = document.getElementById('imageOrderInput');
+let draggedItem = null;
+
+if (sortContainer) {
+    const bindDragEvents = (item) => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('dragenter', handleDragEnter);
+        item.addEventListener('dragleave', handleDragLeave);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+    };
+
+    sortContainer.querySelectorAll('[draggable="true"]').forEach(bindDragEvents);
+}
+
+function handleDragStart(e) {
+    draggedItem = this;
+    this.classList.add('opacity-40');
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragEnter(e) {
+    if (this !== draggedItem) {
+        this.classList.add('border-blue-500', 'scale-[1.02]');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('border-blue-500', 'scale-[1.02]');
+}
+
+function handleDrop(e) {
+    e.stopPropagation();
+    
+    if (draggedItem !== this) {
+        const allItems = Array.from(sortContainer.querySelectorAll('[draggable="true"]'));
+        const draggedIndex = allItems.indexOf(draggedItem);
+        const targetIndex = allItems.indexOf(this);
+        
+        if (draggedIndex < targetIndex) {
+            sortContainer.insertBefore(draggedItem, this.nextSibling);
+        } else {
+            sortContainer.insertBefore(draggedItem, this);
+        }
+        
+        updateImageOrder();
+    }
+    return false;
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('opacity-40');
+    sortContainer.querySelectorAll('[draggable="true"]').forEach(item => {
+        item.classList.remove('border-blue-500', 'scale-[1.02]');
+    });
+}
+
+function updateImageOrder() {
+    const items = sortContainer.querySelectorAll('[draggable="true"]');
+    const ids = Array.from(items).map(item => item.dataset.id);
+    orderInput.value = ids.join(',');
+}
 
 </script>

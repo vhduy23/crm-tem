@@ -98,7 +98,7 @@ $stmt = $pdo->prepare("
             ELSE c.name
         END as cate_name,
         (
-            SELECT GROUP_CONCAT(image_path)
+            SELECT GROUP_CONCAT(image_path ORDER BY sort_order ASC, id ASC)
             FROM product_images 
             WHERE product_id = p.id
         ) as images,
@@ -106,6 +106,7 @@ $stmt = $pdo->prepare("
             SELECT image_path 
             FROM product_images 
             WHERE product_id=p.id 
+            ORDER BY sort_order ASC, id ASC
             LIMIT 1
         ) as thumb
     FROM products p

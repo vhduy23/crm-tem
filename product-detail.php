@@ -24,7 +24,7 @@ if ($product['status'] == 1 && !$isLoggedIn) {
 }
 
 // lấy ảnh
-$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=?");
+$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=? ORDER BY sort_order ASC, id ASC");
 $stmt->execute([$product['id']]);
 $images = $stmt->fetchAll();
 
