@@ -273,22 +273,19 @@ function renderPreview() {
     preview.innerHTML = '';
 
     filesArr.forEach((file, index) => {
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            preview.innerHTML += `
-                <div class="relative group">
-                    <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border border-gray-200">
-                    <button onclick="removeImage(${index})" type="button"
-                        class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                        <i class="fa-solid fa-xmark text-xs"></i>
-                    </button>
-                </div>
-            `;
-        }
-
-        reader.readAsDataURL(file);
+        const url = URL.createObjectURL(file);
+        preview.innerHTML += `
+            <div class="relative group cursor-grab active:cursor-grabbing border-2 border-transparent rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200" draggable="true" data-index="${index}">
+                <img src="${url}" class="w-full h-24 object-cover rounded-lg border border-gray-200 pointer-events-none">
+                <button onclick="removeImage(${index})" type="button"
+                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+        `;
     });
+
+    bindPreviewDragEvents();
 }
 
 function removeImage(index) {
@@ -300,6 +297,81 @@ function removeImage(index) {
     document.getElementById('imageInput').files = dt.files;
 
     renderPreview();
+}
+
+// Drag and drop preview sorting logic
+let draggedPreviewItem = null;
+
+function bindPreviewDragEvents() {
+    const preview = document.getElementById('preview');
+    if (!preview) return;
+    
+    const items = preview.querySelectorAll('[draggable="true"]');
+    items.forEach(item => {
+        item.addEventListener('dragstart', handlePreviewDragStart);
+        item.addEventListener('dragover', handlePreviewDragOver);
+        item.addEventListener('dragenter', handlePreviewDragEnter);
+        item.addEventListener('dragleave', handlePreviewDragLeave);
+        item.addEventListener('drop', handlePreviewDrop);
+        item.addEventListener('dragend', handlePreviewDragEnd);
+    });
+}
+
+function handlePreviewDragStart(e) {
+    draggedPreviewItem = this;
+    this.classList.add('opacity-40');
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handlePreviewDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handlePreviewDragEnter(e) {
+    if (this !== draggedPreviewItem) {
+        this.classList.add('border-blue-500', 'scale-[1.02]');
+    }
+}
+
+function handlePreviewDragLeave(e) {
+    this.classList.remove('border-blue-500', 'scale-[1.02]');
+}
+
+function handlePreviewDrop(e) {
+    e.stopPropagation();
+    
+    if (draggedPreviewItem !== this) {
+        const draggedIndex = parseInt(draggedPreviewItem.dataset.index);
+        const targetIndex = parseInt(this.dataset.index);
+        
+        // Di chuyển phần tử trong mảng filesArr
+        const temp = filesArr[draggedIndex];
+        filesArr.splice(draggedIndex, 1);
+        filesArr.splice(targetIndex, 0, temp);
+        
+        // Cập nhật lại input files
+        const dt = new DataTransfer();
+        filesArr.forEach(f => dt.items.add(f));
+        document.getElementById('imageInput').files = dt.files;
+        
+        // Re-render preview
+        renderPreview();
+    }
+    return false;
+}
+
+function handlePreviewDragEnd(e) {
+    this.classList.remove('opacity-40');
+    const preview = document.getElementById('preview');
+    if (preview) {
+        preview.querySelectorAll('[draggable="true"]').forEach(item => {
+            item.classList.remove('border-blue-500', 'scale-[1.02]');
+        });
+    }
 }
 
 function toSlug(str) {
