@@ -354,11 +354,11 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                                      alt="<?= htmlspecialchars($p['name']) ?>"/>
                             </button>
                             <?php if(!empty($p['cate_name'])): ?>
-                            <span class="absolute top-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
+                            <span class="absolute top-2.5 left-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
                                 <?= htmlspecialchars($p['cate_name']) ?>
                             </span>
-                            <span class="absolute top-2.5 right-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Đã kiểm duyệt</span>
-                            <span class="absolute bottom-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px]  text-[#0B2558] pointer-events-none">
+                            <span class="absolute top-2.5 right-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Duyệt</span>
+                            <span class="absolute bottom-2.5 left-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px]  text-[#0B2558] pointer-events-none">
                                 <?= $p['status'] === 1 ? '<i class="fa-solid fa-star"></i>' : '' ?>
                             </span>
                             <?php endif; ?>
