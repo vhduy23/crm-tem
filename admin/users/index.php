@@ -5,6 +5,9 @@ include '../partials/header.php';
 if ($_SESSION['user']['role_id'] != 1) {
     die("Không thể truy cập !!!");
 }
+
+require_once '../../lib/db.php';
+$allProducts = $pdo->query("SELECT id, name FROM products ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -34,11 +37,16 @@ if ($_SESSION['user']['role_id'] != 1) {
         <select id="role" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"></select>
 
         <label class="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái tài khoản</label>
-        <select id="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+        <select id="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
             <option value="0">Chờ phê duyệt</option>
             <option value="1">Đã phê duyệt (Hoạt động)</option>
             <option value="2">Bị khóa</option>
         </select>
+
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Thiết kế được phép xem (Bổ sung)</label>
+        <div id="assigned-products-list" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-5 text-sm max-h-40 overflow-y-auto bg-gray-50/50 space-y-2">
+            <!-- Render via JS -->
+        </div>
 
         <div class="flex justify-end gap-2">
             <button onclick="closeModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Hủy</button>
@@ -51,6 +59,7 @@ if ($_SESSION['user']['role_id'] != 1) {
 let editId = null;
 let roles = [];
 let allUsers = [];
+const allProducts = <?= json_encode($allProducts) ?>;
 
 function esc(str) {
     const d = document.createElement('div');
@@ -164,6 +173,21 @@ async function approveUser(id) {
     loadUsers();
 }
 
+// ===== RENDER PRODUCTS =====
+function renderProducts(assigned = []) {
+    let html = '';
+    allProducts.forEach(p => {
+        const isChecked = assigned.includes(p.id) ? 'checked' : '';
+        html += `
+            <label class="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
+                <input type="checkbox" class="product-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" value="${p.id}" ${isChecked}>
+                <span>${esc(p.name)}</span>
+            </label>
+        `;
+    });
+    document.getElementById('assigned-products-list').innerHTML = html;
+}
+
 // ===== MODAL =====
 function openModal() {
     editId = null;
@@ -174,6 +198,7 @@ function openModal() {
     document.getElementById('password').placeholder = 'Nhập mật khẩu...';
     document.getElementById('role').value = roles[0] ? roles[0].id : '';
     document.getElementById('status').value = '1';
+    renderProducts([]);
     document.getElementById('modal').classList.remove('hidden');
 }
 
@@ -195,6 +220,7 @@ function edit(id) {
     document.getElementById('status').value = u.status ?? '1';
     document.getElementById('password').value = '';
     document.getElementById('password').placeholder = 'Mật khẩu (để trống nếu không đổi)';
+    renderProducts(u.assigned_products || []);
     document.getElementById('modal').classList.remove('hidden');
 }
 
@@ -210,12 +236,15 @@ async function save() {
         return;
     }
 
+    const assigned_products = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => parseInt(cb.value));
+
     const data = {
         id: editId,
         username,
         password,
         role_id,
-        status
+        status,
+        assigned_products
     };
 
     const res = await fetch('/api/users.php', {

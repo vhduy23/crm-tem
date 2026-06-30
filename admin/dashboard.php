@@ -23,6 +23,7 @@ $latest = $pdo->query("
             SELECT image_path
             FROM product_images
             WHERE product_id = p.id
+            ORDER BY sort_order ASC, id ASC
             LIMIT 1
         ) AS image_path
     FROM products p

@@ -57,7 +57,7 @@ $html .= '<div style="display:flex; flex-wrap:wrap;">';
 foreach ($ids as $id) {
 
     $stmt = $pdo->prepare("
-        SELECT image_path FROM product_images WHERE product_id=?
+        SELECT image_path FROM product_images WHERE product_id=? ORDER BY sort_order ASC, id ASC
     ");
     $stmt->execute([$id]);
     while ($img = $stmt->fetch()) {

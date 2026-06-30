@@ -12,19 +12,37 @@ if (!$product) {
 }
 
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', 28800);
+    session_set_cookie_params(28800);
     session_start();
 }
 $isLoggedIn = isset($_SESSION['member']) || isset($_SESSION['user']);
+$roleId = (int)($_SESSION['member']['role_id'] ?? $_SESSION['user']['role_id'] ?? 0);
+$userId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id'] ?? 0);
 
-if ($product['status'] == 0) {
-    die('Sản phẩm không khả dụng (Không công khai)');
+$hasAccess = false;
+if ($product['status'] == 2) {
+    $hasAccess = true;
+} elseif ($userId > 0 && $roleId !== 9 && $product['status'] == 1) {
+    // All internal roles (not 9) can view status 1
+    $hasAccess = true;
+} elseif ($userId > 0) {
+    $accessStmt = $pdo->prepare("SELECT 1 FROM user_product_access WHERE user_id = ? AND product_id = ?");
+    $accessStmt->execute([$userId, $product['id']]);
+    if ($accessStmt->fetchColumn()) {
+        $hasAccess = true;
+    }
 }
-if ($product['status'] == 1 && !$isLoggedIn) {
-    die('Sản phẩm nội bộ. Vui lòng đăng nhập để xem thiết kế này.');
+
+if (!$hasAccess) {
+    if ($product['status'] == 1 && !$isLoggedIn) {
+        die('Sản phẩm nội bộ. Vui lòng đăng nhập để xem thiết kế này.');
+    }
+    die('Sản phẩm không khả dụng hoặc bạn không có quyền xem thiết kế này.');
 }
 
 // lấy ảnh
-$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=?");
+$stmt = $pdo->prepare("SELECT * FROM product_images WHERE product_id=? ORDER BY sort_order ASC, id ASC");
 $stmt->execute([$product['id']]);
 $images = $stmt->fetchAll();
 

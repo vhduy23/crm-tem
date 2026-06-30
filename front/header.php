@@ -3,6 +3,10 @@ require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/function.php';
 require_once __DIR__ . '/../lib/categories.php';
 
+ini_set('session.gc_maxlifetime', 28800);
+
+session_set_cookie_params(28800);
+
 session_start();
 
 

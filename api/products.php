@@ -6,7 +6,7 @@ require '../admin/auth.php';
 header('Content-Type: application/json');
 $stmt = $pdo->query("
     SELECT p.*, 
-    GROUP_CONCAT(pi.image_path) as images
+    GROUP_CONCAT(pi.image_path ORDER BY pi.sort_order ASC, pi.id ASC) as images
     FROM products p
     LEFT JOIN product_images pi ON p.id = pi.product_id
     GROUP BY p.id

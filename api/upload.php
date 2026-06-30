@@ -51,6 +51,14 @@ foreach ($_FILES['images']['tmp_name'] as $key => $tmp) {
     }
     
     $webpPath = processImage($pngPath);
+    if ($webpPath === false) {
+        if (file_exists($pngPath)) {
+            unlink($pngPath);
+        }
+        http_response_code(400);
+        echo json_encode(['error' => 'Lỗi: Không thể xử lý ảnh. Định dạng ảnh không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng tải lên ảnh JPEG hoặc PNG 8-bit thông thường.']);
+        exit;
+    }
     $stmt = $pdo->prepare("
         INSERT INTO product_images(product_id, image_path)
         VALUES(?, ?)

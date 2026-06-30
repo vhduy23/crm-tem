@@ -14,14 +14,14 @@ $filterPrefix = $filterPrefix ?? 'desktop';
        <?= $category_id == 0 ? 'is-active bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
         <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#1558c0] shrink-0"></span>
-            <span class="text-[13.5px] font-medium text-[#0B2558]">Tất cả</span>
+            <span class="text-[13.5px] font-bold text-[#0B2558]">Tất cả</span>
         </div>
         <span class="cat-filter-count"><?= $totalPro ?></span>
     </a>
     <?php foreach ($categoryTree as $parent):
         $hasChildren = !empty($parent['children']);
         $parentActive = $category_id === (int) $parent['id'];
-        $parentCount = countCategoryProducts($pdo, (int) $parent['id'], $isLogin);
+        $parentCount = countCategoryProducts($pdo, (int) $parent['id'], $whereCate ?? 'status = 2');
         $isExpanded = $hasChildren && categoryGroupIsExpanded($parent, $category_id);
     ?>
         <?php if (!$hasChildren): ?>
@@ -58,7 +58,7 @@ $filterPrefix = $filterPrefix ?? 'desktop';
                  <?= $isExpanded ? '' : 'style="display:none"' ?>>
                 <?php foreach ($parent['children'] as $child):
                     $childActive = $category_id === (int) $child['id'];
-                    $childCount = countCategoryProducts($pdo, (int) $child['id'], $isLogin, false);
+                    $childCount = countCategoryProducts($pdo, (int) $child['id'], $whereCate ?? 'status = 2', false);
                 ?>
                 <a href="<?= buildFilterUrl(['cat' => $child['id']]) ?>"
                    class="cat-filter-link cat-filter-link--child flex items-center justify-between p-[7px_12px_7px_34px] rounded-[9px] transition-colors border-[1.5px] no-underline

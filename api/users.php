@@ -18,7 +18,21 @@ if ($method === 'GET') {
         LEFT JOIN roles r ON u.role_id = r.id
         ORDER BY u.id ASC
     ");
-    echo json_encode($stmt->fetchAll());
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $accessStmt = $pdo->query("SELECT user_id, product_id FROM user_product_access");
+    $accessList = $accessStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $accessMap = [];
+    foreach ($accessList as $row) {
+        $accessMap[$row['user_id']][] = $row['product_id'];
+    }
+
+    foreach ($users as &$u) {
+        $u['assigned_products'] = $accessMap[$u['id']] ?? [];
+    }
+
+    echo json_encode($users);
     exit;
 }
 // ===== CREATE / UPDATE =====
@@ -81,6 +95,18 @@ if ($method === 'POST') {
             VALUES(?, ?, ?, ?)
         ");
         $stmt->execute([$username, $pass, $role_id, $status]);
+        $id = $pdo->lastInsertId();
+    }
+
+    // UPDATE user_product_access
+    if (isset($data['assigned_products']) && is_array($data['assigned_products'])) {
+        $pdo->prepare("DELETE FROM user_product_access WHERE user_id = ?")->execute([$id]);
+        if (!empty($data['assigned_products'])) {
+            $insertAccess = $pdo->prepare("INSERT INTO user_product_access (user_id, product_id) VALUES (?, ?)");
+            foreach ($data['assigned_products'] as $pid) {
+                $insertAccess->execute([$id, (int)$pid]);
+            }
+        }
     }
     // Trả về JSON thành công thay vì chuỗi "ok"
     jsonSuccess('Thao tác thành công');
