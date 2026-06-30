@@ -1,8 +1,6 @@
 <?php
 require 'lib/db.php';
-ini_set('session.gc_maxlifetime', 28800);
-session_set_cookie_params(28800);
-session_start();
+require_once __DIR__ . '/lib/session.php';
 
 // Nếu đã đăng nhập thì về trang chủ
 if (isset($_SESSION['member'])) {
@@ -25,28 +23,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($username === '' || $password === '') {
         $error = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
+        $failKey = 'login_fail_' . md5($username);
+        $failCount = $_SESSION[$failKey]['count'] ?? 0;
+        $failTime  = $_SESSION[$failKey]['time']  ?? 0;
 
-        if ($user && password_verify($password, $user['password'])) {
-            if ((int)$user['status'] !== 1) {
-                $error = 'Tài khoản của bạn hiện đang chờ quản trị viên phê duyệt hoặc đã bị khóa.';
-            } else {
-                // Đăng nhập thành công làm thành viên frontend
-                $_SESSION['member'] = [
-                    'id'       => (int) $user['id'],
-                    'name'     => $user['name'] ?: $user['username'],
-                    'username' => $user['username'],
-                    'role_id'  => (int) $user['role_id'],
-                    'status'   => (int) $user['status'],    // 0: Chờ phê duyệt, 1: Đã phê duyệt, 2: Bị khóa
-                ];
-
-                header("Location: /");
-                exit;
-            }
+        if ($failCount >= 5 && (time() - $failTime) < 300) {
+            $remaining = 300 - (time() - $failTime);
+            $error = "Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau {$remaining} giây.";
         } else {
-            $error = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
+            if ((time() - $failTime) >= 300) {
+                $_SESSION[$failKey] = ['count' => 0, 'time' => time()];
+            }
+
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
+            $stmt->execute([$username]);
+            $user = $stmt->fetch();
+
+            if ($user && password_verify($password, $user['password'])) {
+                if ((int)$user['status'] !== 1) {
+                    $error = 'Tài khoản của bạn hiện đang chờ quản trị viên phê duyệt hoặc đã bị khóa.';
+                } else {
+                    unset($_SESSION[$failKey]);
+                    
+                    // Chống Session Fixation
+                    session_regenerate_id(true);
+
+                    // Đăng nhập thành công làm thành viên frontend
+                    $_SESSION['member'] = [
+                        'id'       => (int) $user['id'],
+                        'name'     => $user['name'] ?: $user['username'],
+                        'username' => $user['username'],
+                        'role_id'  => (int) $user['role_id'],
+                        'status'   => (int) $user['status'],
+                    ];
+
+                    header("Location: /");
+                    exit;
+                }
+            } else {
+                $_SESSION[$failKey]['count'] = $failCount + 1;
+                $_SESSION[$failKey]['time']  = time();
+                $error = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
+            }
         }
     }
 }

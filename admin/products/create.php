@@ -2,9 +2,7 @@
 require '../../lib/db.php';
 require '../../lib/image.php';
 require '../../lib/categories.php';
-ini_set('session.gc_maxlifetime', 28800);
-session_set_cookie_params(28800);
-session_start();
+require_once __DIR__ . '/../../lib/session.php';
 
 // lấy brand + category
 $brands = $pdo->query("SELECT id, name FROM brands")->fetchAll();

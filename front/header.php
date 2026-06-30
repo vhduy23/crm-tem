@@ -2,16 +2,26 @@
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/function.php';
 require_once __DIR__ . '/../lib/categories.php';
-
-ini_set('session.gc_maxlifetime', 28800);
-
-session_set_cookie_params(28800);
-
-session_start();
+require_once __DIR__ . '/../lib/session.php';
 
 
     $isLogin = false;
     if (isset($_SESSION['member']) || isset($_SESSION['user'])) {
+        $checkId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id']);
+        
+        // Force logout check: verify if the user's status is still active (1)
+        if ($checkId > 0) {
+            $checkStmt = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+            $checkStmt->execute([$checkId]);
+            $statusCheck = $checkStmt->fetchColumn();
+            
+            if ($statusCheck === false || (int)$statusCheck !== 1) {
+                // User disabled, deleted, or pending -> force logout
+                header("Location: /logout.php");
+                exit;
+            }
+        }
+
         $isLogin = true;
         if (!isset($_SESSION['member'])) {
             $_SESSION['member'] = $_SESSION['user'];

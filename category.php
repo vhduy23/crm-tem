@@ -5,11 +5,7 @@ include 'front/header.php';
 $cat_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $catIds = $cat_id > 0 ? getCategoryFilterIds($pdo, $cat_id) : [];
 $placeholders = $catIds ? implode(',', array_fill(0, count($catIds), '?')) : '0';
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.gc_maxlifetime', 28800);
-    session_set_cookie_params(28800);
-    session_start();
-}
+require_once __DIR__ . '/lib/session.php';
 $roleId = (int)($_SESSION['member']['role_id'] ?? $_SESSION['user']['role_id'] ?? 0);
 $userId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id'] ?? 0);
 

@@ -11,11 +11,7 @@ if (!$product) {
     die('Không tìm thấy sản phẩm');
 }
 
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.gc_maxlifetime', 28800);
-    session_set_cookie_params(28800);
-    session_start();
-}
+require_once __DIR__ . '/lib/session.php';
 $isLoggedIn = isset($_SESSION['member']) || isset($_SESSION['user']);
 $roleId = (int)($_SESSION['member']['role_id'] ?? $_SESSION['user']['role_id'] ?? 0);
 $userId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id'] ?? 0);

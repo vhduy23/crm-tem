@@ -1,7 +1,5 @@
 <?php
-ini_set('session.gc_maxlifetime', 28800);
-session_set_cookie_params(28800);
-session_start();
+require_once __DIR__ . '/../lib/session.php';
 
 if (isset($_SESSION['user'])) {
     header("Location: /admin/dashboard.php");
