@@ -27,14 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $brand_id = $_POST['brand_id'] ?? null;
     $category_id = $_POST['category_id'] ?? null;
     $status = isset($_POST['status']) ? (int)$_POST['status'] : 0;
+    $approval_status = isset($_POST['approval_status']) ? (int)$_POST['approval_status'] : 0;
 
     // update product
     $stmt = $pdo->prepare("
         UPDATE products 
-        SET name=?, description=?, brand_id=?, category_id=?, status=? 
+        SET name=?, description=?, brand_id=?, category_id=?, status=?, approval_status=?
         WHERE id=?
     ");
-    $stmt->execute([$name, $desc, $brand_id, $category_id, $status, $id]);
+    $stmt->execute([$name, $desc, $brand_id, $category_id, $status, $approval_status, $id]);
 
     // cập nhật thứ tự các ảnh cũ
     $currentMaxSort = 0;
@@ -114,7 +115,7 @@ include '../partials/header.php';
         <textarea name="description"
             class="w-full border border-gray-200 rounded-xl px-3 py-2.5 mb-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 min-h-[100px]"><?= $p['description'] ?></textarea>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Thương hiệu</label>
                 <select name="brand_id" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
@@ -135,11 +136,19 @@ include '../partials/header.php';
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Hiển thị</label>
                 <select name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     <option value="0" <?= $p['status'] == 0 ? 'selected' : '' ?>>Không công khai</option>
                     <option value="1" <?= $p['status'] == 1 ? 'selected' : '' ?>>Nội bộ</option>
                     <option value="2" <?= $p['status'] == 2 ? 'selected' : '' ?>>Công khai</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
+                <select name="approval_status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <option value="0" <?= $p['approval_status'] == 0 ? 'selected' : '' ?>>Chờ</option>
+                    <option value="1" <?= $p['approval_status'] == 1 ? 'selected' : '' ?>>Duyệt</option>
+                    <option value="2" <?= $p['approval_status'] == 2 ? 'selected' : '' ?>>Hủy</option>
                 </select>
             </div>
         </div>
@@ -153,7 +162,7 @@ include '../partials/header.php';
                 <?php foreach($images as $img): ?>
                     <div class="relative group cursor-grab active:cursor-grabbing border-2 border-transparent rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200" draggable="true" data-id="<?= $img['id'] ?>">
                         <img src="<?= $img['image_path'] ?>" 
-                             class="w-full h-24 object-cover rounded-lg border border-gray-200 pointer-events-none">
+                             class="w-full h-34 object-cover rounded-lg border border-gray-200 pointer-events-none">
                         <button type="button"
                             onclick="deleteImage(<?= $img['id'] ?>, this)"
                             class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
@@ -275,7 +284,7 @@ function renderPreview() {
         const url = URL.createObjectURL(file);
         preview.innerHTML += `
             <div class="relative group cursor-grab active:cursor-grabbing border-2 border-transparent rounded-lg hover:border-blue-500 hover:shadow-md transition-all duration-200" draggable="true" data-index="${index}">
-                <img src="${url}" class="w-full h-24 object-cover rounded-lg border border-gray-200 pointer-events-none">
+                <img src="${url}" class="w-full h-34 object-cover rounded-lg border border-gray-200 pointer-events-none">
                 <button onclick="removeImage(${index})" type="button"
                     class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                     <i class="fa-solid fa-xmark text-xs"></i>
