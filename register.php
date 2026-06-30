@@ -1,6 +1,6 @@
 <?php
 require 'lib/db.php';
-session_start();
+require_once __DIR__ . '/lib/session.php';
 
 // Nếu đã đăng nhập thì về trang chủ
 if (isset($_SESSION['member'])) {

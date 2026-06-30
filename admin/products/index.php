@@ -55,12 +55,13 @@ $stmt = $pdo->prepare("
                WHEN cp.name IS NOT NULL THEN CONCAT(cp.name, ' › ', c.name)
                ELSE c.name
            END as category_name,
-           (
-               SELECT image_path 
-               FROM product_images 
-               WHERE product_id = p.id 
-               LIMIT 1
-           ) as thumb
+            (
+                SELECT image_path 
+                FROM product_images 
+                WHERE product_id = p.id 
+                ORDER BY sort_order ASC, id ASC
+                LIMIT 1
+            ) as thumb
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     LEFT JOIN categories c ON p.category_id = c.id
@@ -129,8 +130,11 @@ $categories = fetchCategories($pdo);
                     <th class="p-3 font-medium text-center">Tên</th>
                     <th class="p-3 font-medium text-center">Thương hiệu</th>
                     <th class="p-3 font-medium text-center">Danh mục</th>
+                    <th class="p-3 font-medium text-center">Hiển thị</th>
+                    <?php if(isAdmin()): ?>
                     <th class="p-3 font-medium text-center">Trạng thái</th>
                     <th class="p-3 font-medium text-center">Thao tác</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
 
@@ -160,6 +164,14 @@ $categories = fetchCategories($pdo);
                         elseif($p['status'] == 2) echo '<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Công khai</span>';
                         ?>
                     </td>
+                    <?php if(isAdmin()): ?>
+                    <td class="p-3 text-center">
+                        <select class="approval-dropdown border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none" data-id="<?= $p['id'] ?>">
+                            <option value="0" <?= $p['approval_status'] == 0 ? 'selected' : '' ?>>Chờ</option>
+                            <option value="1" <?= $p['approval_status'] == 1 ? 'selected' : '' ?>>Duyệt</option>
+                            <option value="2" <?= $p['approval_status'] == 2 ? 'selected' : '' ?>>Hủy</option>
+                        </select>
+                    </td>
 
                     <td class="p-3 text-center">
                         <a href="edit.php?id=<?= $p['id'] ?>" class="text-blue-600 hover:underline text-sm">Sửa</a>
@@ -172,6 +184,7 @@ $categories = fetchCategories($pdo);
                             </a>
                         <?php // } ?>
                     </td>
+                    <?php endif; ?>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -219,5 +232,38 @@ $categories = fetchCategories($pdo);
     </div>
 
 </div>
+
+<script>
+document.querySelectorAll('.approval-dropdown').forEach(select => {
+    select.addEventListener('change', function() {
+        const id = this.getAttribute('data-id');
+        const status = this.value;
+        const selectElement = this;
+        
+        fetch('update_approval.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${id}&status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                // Thêm hiệu ứng nháy xanh lá báo thành công
+                selectElement.classList.add('bg-green-100');
+                setTimeout(() => {
+                    selectElement.classList.remove('bg-green-100');
+                }, 1000);
+            } else {
+                alert('Lỗi cập nhật trạng thái');
+            }
+        })
+        .catch(err => {
+            alert('Lỗi cập nhật trạng thái');
+        });
+    });
+});
+</script>
 
 <?php include '../partials/footer.php'; ?>

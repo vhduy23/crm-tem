@@ -36,17 +36,35 @@ function buildFilterUrl($overrides = []) {
 $conditions = [];
 $params = [];
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/lib/session.php';
 
 if (!empty($_SESSION['member']['id']) || !empty($_SESSION['user']['id'])) {
 
     // Đã đăng nhập
     $isLogin = true;
-    $whereCate = "status IN (1, 2)";
-    $whereBrand  = "p.status IN (1, 2)";
-    $conditions[] = "p.status IN (1, 2)";
+    
+    $roleId = (int)($_SESSION['member']['role_id'] ?? $_SESSION['user']['role_id'] ?? 0);
+    $userId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id'] ?? 0);
+    
+    $assignedSql = $userId > 0 ? " OR id IN (SELECT product_id FROM user_product_access WHERE user_id = $userId)" : "";
+    $assignedSqlP = $userId > 0 ? " OR p.id IN (SELECT product_id FROM user_product_access WHERE user_id = $userId)" : "";
+    
+    $userAssignedProducts = [];
+    if ($userId > 0) {
+        $userAssignedProducts = $pdo->query("SELECT product_id FROM user_product_access WHERE user_id = $userId")->fetchAll(PDO::FETCH_COLUMN);
+    }
+    
+    // Nếu là user nội bộ (không phải khách hàng role 9) thì được xem status 1, 2. Nếu là role 9 thì chỉ xem 2.
+    if ($roleId !== 9) {
+        $whereCate = "(status IN (1, 2) $assignedSql)";
+        $whereBrand  = "(p.status IN (1, 2) $assignedSqlP)";
+        $conditions[] = "(p.status IN (1, 2) $assignedSqlP)";
+    } else {
+        $whereCate = "(status = 2 $assignedSql)";
+        $whereBrand  = "(p.status = 2 $assignedSqlP)";
+        $conditions[] = "(p.status = 2 $assignedSqlP)";
+    }
+
 } else {
 
     // Khách
@@ -98,7 +116,7 @@ $stmt = $pdo->prepare("
             ELSE c.name
         END as cate_name,
         (
-            SELECT GROUP_CONCAT(image_path)
+            SELECT GROUP_CONCAT(image_path ORDER BY sort_order ASC, id ASC)
             FROM product_images 
             WHERE product_id = p.id
         ) as images,
@@ -106,6 +124,7 @@ $stmt = $pdo->prepare("
             SELECT image_path 
             FROM product_images 
             WHERE product_id=p.id 
+            ORDER BY sort_order ASC, id ASC
             LIMIT 1
         ) as thumb
     FROM products p
@@ -170,7 +189,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
             </form>
         </div>
     </div>
-    <div class="max-w-[1340px] mx-auto px-[10px] pt-7 grid grid-cols-1 lg:grid-cols-[264px_1fr] gap-7 items-start">
+    <div class="max-w-[1340px] mx-auto px-[10px] pt-7 grid grid-cols-1 lg:grid-cols-[255px_1fr] gap-7 items-start">
         
         <aside class="hidden lg:flex flex-col gap-4 sticky top-20">
             <div class="bg-[#e8edf8] rounded-[14px] p-4 mb-0.5">
@@ -338,7 +357,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                 </span>
                 <?php endif; ?>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4.5">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4.5">
                 <?php if(!empty($data)): ?>
 
                     <?php foreach($data as $p): ?>
@@ -346,19 +365,30 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                     <article class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 hover:border-[#1a52b5]/25 transition-all duration-300">
                         
                         <div class="relative overflow-hidden">
-                            <button type="button" class="open-design-popup block w-full aspect-[4/3] bg-[#EFF1F7] p-0 border-0 cursor-pointer overflow-hidden" data-product-id="<?= $p['id'] ?>">
+                            <button type="button" class="open-design-popup block w-full aspect-[4/3] bg-[#EFF1F7] p-0 border-0 cursor-pointer overflow-hidden h-[250px]" data-product-id="<?= $p['id'] ?>">
                                 <img src="<?= $p['thumb'] ?>" 
                                      class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)]" 
                                      loading="lazy" 
                                      alt="<?= htmlspecialchars($p['name']) ?>"/>
                             </button>
                             <?php if(!empty($p['cate_name'])): ?>
-                            <span class="absolute top-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
+                            <span class="absolute top-2.5 left-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none tag-<?= $p['cate_id'] ?>">
                                 <?= htmlspecialchars($p['cate_name']) ?>
                             </span>
-                            <span class="absolute top-2.5 right-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] bg-[#0B2558]/72 text-white pointer-events-none bg-red-600">Đã kiểm duyệt</span>
-                            <span class="absolute bottom-2.5 left-2.5 text-[10.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px]  text-[#0B2558] pointer-events-none">
-                                <?= $p['status'] === 1 ? '<i class="fa-solid fa-star"></i>' : '' ?>
+                            <?php if ($p['approval_status'] == 1): ?>
+                                <span class="absolute top-2.5 right-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] text-white pointer-events-none bg-green-600">Duyệt</span>
+                            <?php elseif ($p['approval_status'] == 0): ?>
+                                <span class="absolute top-2.5 right-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] text-white pointer-events-none bg-yellow-500">Chờ</span>
+                            <?php elseif ($p['approval_status'] == 2): ?>
+                                <span class="absolute top-2.5 right-2.5 text-[9.5px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] text-white pointer-events-none bg-red-500">Hủy</span>
+                            <?php endif; ?>
+                            <?php 
+                                $isCustomer = (isset($roleId) && $roleId == 9);
+                                $isAssigned = isset($userAssignedProducts) && in_array($p['id'], $userAssignedProducts);
+                                $starColor = ($isCustomer && $isAssigned) ? 'text-yellow-500' : 'text-[#0B2558]';
+                            ?>
+                            <span class="absolute bottom-2.5 left-2.5 text-[11px] font-semibold tracking-wide px-2.5 py-[3px] rounded-full backdrop-blur-[4px] <?= $starColor ?> pointer-events-none">
+                                <?= ($p['status'] == 1 || $isAssigned) ? '<i class="fa-solid fa-star drop-shadow-sm"></i>' : '' ?>
                             </span>
                             <?php endif; ?>
                         </div>

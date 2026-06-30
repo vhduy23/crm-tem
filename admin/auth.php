@@ -1,9 +1,22 @@
 <?php
-session_start();
+require_once __DIR__ . '/../lib/session.php';
+require_once __DIR__ . '/../lib/db.php';
 
 function checkLogin() {
+    global $pdo; // Make sure $pdo is available in the scope
     if (!isset($_SESSION['user'])) {
         header("Location: /admin/login.php");
+        exit;
+    }
+    
+    // Check if user is still active in DB
+    $checkId = (int)$_SESSION['user']['id'];
+    $checkStmt = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+    $checkStmt->execute([$checkId]);
+    $statusCheck = $checkStmt->fetchColumn();
+    
+    if ($statusCheck === false || (int)$statusCheck !== 1) {
+        header("Location: /admin/logout.php");
         exit;
     }
 }

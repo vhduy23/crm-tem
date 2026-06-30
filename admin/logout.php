@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../lib/session.php';
 
 // unset toàn bộ session
 $_SESSION = [];
