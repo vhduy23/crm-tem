@@ -14,7 +14,7 @@ $filterPrefix = $filterPrefix ?? 'desktop';
        <?= $category_id == 0 ? 'is-active bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
         <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#1558c0] shrink-0"></span>
-            <span class="text-[13.5px] font-medium text-[#0B2558]">Tất cả</span>
+            <span class="text-[13.5px] font-bold text-[#0B2558]">Tất cả</span>
         </div>
         <span class="cat-filter-count"><?= $totalPro ?></span>
     </a>
