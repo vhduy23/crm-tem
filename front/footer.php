@@ -29,9 +29,8 @@
 
 </body>
 </html>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 function getCart() {
     return JSON.parse(localStorage.getItem('print_cart') || '[]');
@@ -105,206 +104,145 @@ renderCart();
 
 
 <script>
-    document.getElementById('print-btn').onclick = () => {
+    document.getElementById('print-btn').onclick = async () => {
 
-        const originalScrollX = window.scrollX;
-        const originalScrollY = window.scrollY;
-        window.scrollTo(0, 0);
+    const originalScrollX = window.scrollX;
+    const originalScrollY = window.scrollY;
+    window.scrollTo(0, 0);
 
-        let cart = getCart();
+    let cart = getCart();
+    if (!cart.length) return;
 
-        let loadingOverlay = document.createElement('div');
-        loadingOverlay.style.position = 'fixed';
-        loadingOverlay.style.top = '0';
-        loadingOverlay.style.left = '0';
-        loadingOverlay.style.width = '100%';
-        loadingOverlay.style.height = '100%';
-        loadingOverlay.style.backgroundColor = '#ffffff';
-        loadingOverlay.style.zIndex = '999999';
-        loadingOverlay.style.overflowY = 'auto'; // Cho phép cuộn ngầm nếu data dài
-        loadingOverlay.style.padding = '20px';
-        loadingOverlay.style.boxSizing = 'border-box';
-        loadingOverlay.style.fontFamily = 'Arial, sans-serif';
-        
-        let infoText = document.createElement('div');
-        infoText.innerText = 'Đang đồng bộ dữ liệu hình ảnh và xuất file PDF chất lượng cao, vui lòng đợi...';
-        infoText.style.textAlign = 'center';
-        infoText.style.color = '#004B87';
-        infoText.style.fontSize = '18px';
-        infoText.style.fontWeight = 'bold';
-        infoText.style.marginBottom = '20px';
-        loadingOverlay.appendChild(infoText);
+    // ==== Loading overlay ====
+    let loadingOverlay = document.createElement('div');
+    Object.assign(loadingOverlay.style, {
+        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+        backgroundColor: '#fff', zIndex: 999999, display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        fontFamily: 'Arial, sans-serif', fontSize: '18px',
+        fontWeight: 'bold', color: '#004B87'
+    });
+    loadingOverlay.innerText = 'Đang đồng bộ dữ liệu hình ảnh và xuất file PDF chất lượng cao, vui lòng đợi...';
+    document.body.appendChild(loadingOverlay);
 
-        let container = document.createElement('div');
-        container.style.width = '794px'; // Kích thước chuẩn trang A4 dọc
-        container.style.margin = '0 auto';
-        container.style.padding = '30px';
-        container.style.boxSizing = 'border-box';
-        container.style.backgroundColor = '#ffffff';
-        loadingOverlay.appendChild(container);
+    // ==== Chuẩn bị hằng số trang ====
+    const PAGE_W = 210, PAGE_H = 297;   // A4 mm
+    const MARGIN = 10;
+    const CONTENT_W = PAGE_W - MARGIN * 2; // 190mm
+    const HEADER_H = 22;                // mm
+    const HEADER_GAP = 6;               // khoảng cách header -> nội dung
+    const CONTENT_TOP = MARGIN + HEADER_H + HEADER_GAP;
+    const ITEM_GAP = 8;
 
-        document.body.appendChild(loadingOverlay);
+    // ==== Dựng khối header (logo + tiêu đề) để chụp canvas 1 lần ====
+    <?php $logoBase64 = file_get_contents(__DIR__ . '/../logo_b64.txt'); ?>
+    let headerEl = document.createElement('div');
+    Object.assign(headerEl.style, {
+        display: 'flex', alignItems: 'stretch', height: '80px',
+        border: '1px solid #e0e0e0', width: '794px', background: '#fff'
+    });
+    headerEl.innerHTML = `
+        <div style="width:160px;display:flex;align-items:center;justify-content:center;padding:10px;box-sizing:border-box;">
+            <img id="hdr-logo" src="<?php echo $logoBase64; ?>"
+                style="max-width:100%;max-height:100%;object-fit:contain;">
+        </div>
+        <div style="background:#004B87;flex-grow:1;display:flex;align-items:center;padding:0 25px;box-sizing:border-box;">
+            <span style="color:#fff;font-size:22px;font-weight:bold;text-transform:uppercase; display:inline-block; transform:translateY(-10px);">
+                TỔNG HỢP CATALOGUE SẢN PHẨM
+            </span>
+        </div>`;
+    headerEl.style.position = 'fixed';
+    headerEl.style.left = '-9999px';
+    document.body.appendChild(headerEl);
 
-        // ==========================================
-        // 2. TẠO BANNER HEADER CÓ LOGO 
-        // ==========================================
-        let header = document.createElement('div');
-        header.style.display = 'flex';
-        header.style.alignItems = 'stretch'; 
-        header.style.height = '80px';        
-        header.style.marginBottom = '35px';
-        header.style.border = '1px solid #e0e0e0'; 
+    await new Promise(res => {
+        const img = headerEl.querySelector('#hdr-logo');
+        if (img.complete) res();
+        else { img.onload = res; img.onerror = res; }
+    });
 
-        let logoBox = document.createElement('div');
-        logoBox.style.backgroundColor = '#ffffff';
-        logoBox.style.width = '160px';       
-        logoBox.style.display = 'flex';
-        logoBox.style.alignItems = 'center';
-        logoBox.style.justifyContent = 'center';
-        logoBox.style.padding = '10px';
-        logoBox.style.boxSizing = 'border-box';
+    const headerCanvas = await html2canvas(headerEl, { scale: 2.5, useCORS: true });
+    const headerImgData = headerCanvas.toDataURL('image/jpeg', 1.0);
+    headerEl.remove();
 
-        let logoImg = document.createElement('img');
-        logoImg.crossOrigin = 'anonymous';  
-        logoImg.src = 'https://achau1.bzz.vn/uploads/Logo-nen-trang.png';
-        logoImg.style.maxWidth = '100%';
-        logoImg.style.maxHeight = '100%';
-        logoImg.style.objectFit = 'contain'; 
-        logoBox.appendChild(logoImg);
-        
-        // Thêm khối logo vào header
-        header.appendChild(logoBox);
+    // ==== Khởi tạo jsPDF trực tiếp ====
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
 
-        // KHỐI BÊN PHẢI: Chứa tiêu đề (Nền màu xanh)
-        let titleBox = document.createElement('div');
-        titleBox.style.backgroundColor = '#004B87'; 
-        titleBox.style.flexGrow = '1';       
-        titleBox.style.display = 'flex';
-        titleBox.style.alignItems = 'center';
-        titleBox.style.padding = '0 25px';
-        titleBox.style.boxSizing = 'border-box';
+    function drawHeader() {
+        pdf.addImage(headerImgData, 'JPEG', MARGIN, MARGIN, CONTENT_W, HEADER_H);
+    }
 
-        let headerText = document.createElement('div');
-        headerText.innerText = 'TỔNG HỢP CATALOGUE SẢN PHẨM'; 
-        headerText.style.color = 'white';
-        headerText.style.fontSize = '22px';
-        headerText.style.fontWeight = 'bold';
-        headerText.style.textTransform = 'uppercase';
-        headerText.style.letterSpacing = '1px';
-        titleBox.appendChild(headerText);
+    let y = CONTENT_TOP;
+    let firstPage = true;
 
-        // Thêm khối tiêu đề vào header
-        header.appendChild(titleBox);
+    // ==== Duyệt từng sản phẩm, render riêng rồi ghép vào PDF ====
+    for (const item of cart) {
 
-        // Đưa toàn bộ header vào container chính
-        container.appendChild(header);
-        // ==========================================
+        let block = document.createElement('div');
+        Object.assign(block.style, { width: '794px', background: '#fff', boxSizing: 'border-box', padding: '0 4px' });
 
-        let imagePromises = [];
+        let titleWrapper = document.createElement('div');
+        Object.assign(titleWrapper.style, { display: 'flex', alignItems: 'center', marginBottom: '15px' });
 
-        // 4. DUYỆT RENDER DANH SÁCH SẢN PHẨM
-        cart.forEach(item => {
-            let itemBlock = document.createElement('div');
-            itemBlock.style.pageBreakInside = 'avoid'; 
-            itemBlock.style.breakInside = 'avoid';
-            itemBlock.style.marginBottom = '40px';
+        let title = document.createElement('h3');
+        title.innerText = item.name.toUpperCase();
+        Object.assign(title.style, { color: '#D32F2F', margin: '0 15px 0 0', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap' });
+        titleWrapper.appendChild(title);
 
-            // Tiêu đề sản phẩm chữ in hoa màu đỏ + đường gạch ngang dài
-            let titleWrapper = document.createElement('div');
-            titleWrapper.style.display = 'flex';
-            titleWrapper.style.alignItems = 'center';
-            titleWrapper.style.marginBottom = '20px';
+        let redLine = document.createElement('div');
+        Object.assign(redLine.style, { flexGrow: '1', height: '1px', backgroundColor: '#D32F2F' });
+        titleWrapper.appendChild(redLine);
+        block.appendChild(titleWrapper);
 
-            let title = document.createElement('h3');
-            title.innerText = item.name.toUpperCase(); 
-            title.style.color = '#D32F2F'; 
-            title.style.margin = '0 15px 0 0';
-            title.style.fontSize = '16px';
-            title.style.fontWeight = 'bold';
-            title.style.whiteSpace = 'nowrap';
-            titleWrapper.appendChild(title);
+        let row = document.createElement('div');
+        Object.assign(row.style, { display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start' });
 
-            let redLine = document.createElement('div');
-            redLine.style.flexGrow = '1';
-            redLine.style.height = '1px';
-            redLine.style.backgroundColor = '#D32F2F';
-            titleWrapper.appendChild(redLine);
-
-            itemBlock.appendChild(titleWrapper);
-
-            // THAY THẾ TOÀN BỘ GRID THÀNH FLEXBOX (Giải quyết triệt để lỗi sụp đổ trang trắng)
-            let row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.flexWrap = 'wrap';
-            row.style.justifyContent = 'flex-start';
-
-            item.images.forEach(img => {
-                // Tạo một khối bọc ảnh đóng vai trò như 1 cột (Chiếm ~23% bề rộng để xếp vừa 4 cột)
-                let col = document.createElement('div');
-                col.style.width = '23%';
-                col.style.marginRight = '1%';
-                col.style.marginBottom = '15px';
-                col.style.boxSizing = 'border-box';
-
-                let el = document.createElement('img');
-                
-                let imgLoad = new Promise((resolve) => {
-                    el.onload = () => resolve();
-                    el.onerror = () => resolve(); 
-                });
-                imagePromises.push(imgLoad);
-
-                // FIX LỖI BẢO MẬT ẢNH (CORS) - Ngăn chặn tình trạng Canvas bị khóa gây trắng trang
-                el.crossOrigin = 'anonymous'; 
-                el.src = img;
-                el.style.width = '100%';
-                el.style.height = 'auto'; 
-                el.style.maxHeight = '150px'; 
-                el.style.objectFit = 'contain';
-                
-                col.appendChild(el);
-                row.appendChild(col);
-            });
-
-            itemBlock.appendChild(row);
-            container.appendChild(itemBlock);
+        let imgLoadPromises = [];
+        item.images.forEach(src => {
+            let col = document.createElement('div');
+            Object.assign(col.style, { width: '23%', marginRight: '1%', marginBottom: '15px', boxSizing: 'border-box' });
+            let el = document.createElement('img');
+            el.crossOrigin = 'anonymous';
+            el.src = src;
+            Object.assign(el.style, { width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'contain' });
+            imgLoadPromises.push(new Promise(res => { el.onload = res; el.onerror = res; }));
+            col.appendChild(el);
+            row.appendChild(col);
         });
+        block.appendChild(row);
 
-        // 5. CHỜ ẢNH TẢI XONG + DELAY 500MS ĐỂ TRÌNH DUYỆT KỊP VẼ RỒI MỚI CHỤP
-        Promise.all(imagePromises).then(() => {
-            setTimeout(() => {
-                let opt = {
-                    margin:       [10, 10, 10, 10], 
-                    filename:     'catalog.pdf',
-                    image:        { type: 'jpeg', quality: 1.0 }, 
-                    html2canvas:  { 
-                        scale: 2.5,         // Tối ưu độ nét ở mức 2.5 để giảm tải cho bộ nhớ RAM, tránh crash canvas
-                        useCORS: true,      
-                        allowTaint: true,   // Cho phép vẽ ảnh kể cả khi dính lỗi bảo mật CORS nhẹ từ server
-                        scrollY: 0,         
-                        scrollX: 0,
-                        logging: false 
-                    },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
+        block.style.position = 'fixed';
+        block.style.left = '-9999px';
+        document.body.appendChild(block);
+        await Promise.all(imgLoadPromises);
 
-                // Tiến hành xuất và tải file PDF từ vùng `container`
-                html2pdf().set(opt).from(container).save().then(() => {
-                    // DỌN DẸP: Xóa bỏ màn hình phủ và đưa người dùng về vị trí cũ
-                    loadingOverlay.remove(); 
-                    window.scrollTo(originalScrollX, originalScrollY);
+        const canvas = await html2canvas(block, { scale: 2.5, useCORS: true });
+        block.remove();
 
-                    // clear giỏ hàng
-                    localStorage.removeItem('print_cart');
-                    renderCart();
+        const imgHmm = canvas.height * (CONTENT_W / canvas.width);
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
-                    document.getElementById('print-cart').classList.toggle('hidden');
+        // Nếu không đủ chỗ trên trang hiện tại -> sang trang mới + vẽ header
+        if (y + imgHmm > PAGE_H - MARGIN) {
+            pdf.addPage();
+            y = CONTENT_TOP;
+        }
+        if (firstPage) { drawHeader(); firstPage = false; }
+        // vẽ header cho mọi trang mới được tạo ra ở trên (kể cả khi vừa addPage)
+        // (đảm bảo header luôn có sau addPage)
+        if (y === CONTENT_TOP) drawHeader();
 
-                }).catch(err => {
-                    console.error("Lỗi xuất PDF:", err);
-                    loadingOverlay.remove();
-                });
-            }, 500); // Khoảng hoãn 500 mili giây cực kỳ quan trọng giúp ổn định DOM
-        });
+        pdf.addImage(imgData, 'JPEG', MARGIN, y, CONTENT_W, imgHmm);
+        y += imgHmm + ITEM_GAP;
+    }
+    
+    pdf.save('catalog.pdf');
+
+    loadingOverlay.remove();
+    window.scrollTo(originalScrollX, originalScrollY);
+    localStorage.removeItem('print_cart');
+    renderCart();
+    document.getElementById('print-cart').classList.add('hidden');
     };
 </script>

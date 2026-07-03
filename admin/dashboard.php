@@ -175,7 +175,7 @@ $stats = [
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
     <?php foreach ($latest as $p): ?>
     <div class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+        <div class="relative aspect-[6/5] bg-gray-100 overflow-hidden">
             <?php if ($p['image_path']): ?>
                 <img src="<?= htmlspecialchars($p['image_path']) ?>"
                      alt="<?= htmlspecialchars($p['name']) ?>"
