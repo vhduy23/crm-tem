@@ -148,7 +148,7 @@ renderCart();
         </div>
         <div style="background:#004B87;flex-grow:1;display:flex;align-items:center;padding:0 25px;box-sizing:border-box;">
             <span style="color:#fff;font-size:22px;font-weight:bold;text-transform:uppercase; display:inline-block; transform:translateY(-10px);">
-                TỔNG HỢP CATALOGUE SẢN PHẨM
+                GRAPHIC DESIGNS
             </span>
         </div>`;
     headerEl.style.position = 'fixed';

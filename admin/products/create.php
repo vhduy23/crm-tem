@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../lib/session.php';
 // lấy brand + category
 $brands = $pdo->query("SELECT id, name FROM brands")->fetchAll();
 $categories = fetchCategories($pdo);
+$allUsers = $pdo->query("SELECT id, username, name FROM users WHERE role_id != 1 ORDER BY name ASC")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -19,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $approval_status = isset($_POST['approval_status']) ? (int)$_POST['approval_status'] : 0;
 
     if (!$name) {
-        die('Tên không được để trống');
+        echo "<script>alert('Tên không được để trống'); history.back();</script>";
+        exit;
     }
 
     $slugInput = $_POST['slug'] ?? '';
@@ -33,6 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$name, $slug, $desc, $brand_id, $category_id, $user_id, $status, $approval_status]);
 
     $product_id = $pdo->lastInsertId();
+
+    $access_users = $_POST['access_users'] ?? [];
+    if (!empty($access_users)) {
+        $stmtAcc = $pdo->prepare("INSERT INTO user_product_access (user_id, product_id) VALUES (?, ?)");
+        foreach ($access_users as $uid) {
+            $stmtAcc->execute([$uid, $product_id]);
+        }
+    }
 
     // upload folder
     $uploadDir = __DIR__ . '/../../uploads/products/';
@@ -59,7 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (file_exists($png)) {
                             unlink($png);
                         }
-                        die("Lỗi: Không thể xử lý ảnh '{$_FILES['images']['name'][$k]}'. Có thể ảnh được xuất ở định dạng không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng cấu hình KeyShot để xuất ảnh dưới dạng JPEG hoặc PNG 8-bit thông thường trước khi tải lên.");
+                        echo "<script>alert('Lỗi: Không thể xử lý ảnh {$_FILES['images']['name'][$k]}. Có thể ảnh được xuất ở định dạng không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng cấu hình KeyShot để xuất ảnh dưới dạng JPEG hoặc PNG 8-bit thông thường trước khi tải lên.'); history.back();</script>";
+                        exit;
                     }
 
                     // FIX: chỉ lưu URL
@@ -162,7 +173,7 @@ function uniqueSlug($pdo, $slug) {
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Hiển thị</label>
-                <select name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                <select id="statusSelect" name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     <option value="0">Không công khai</option>
                     <option value="1">Nội bộ</option>
                     <option value="2">Công khai</option>
@@ -176,6 +187,16 @@ function uniqueSlug($pdo, $slug) {
                     <option value="2">Hủy</option>
                 </select>
             </div>
+        </div>
+
+        <div class="mb-4" id="accessUsersWrapper">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Người dùng được xem (chỉ định riêng)</label>
+            <select name="access_users[]" multiple class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" style="min-height: 120px;">
+                <?php foreach($allUsers as $u): ?>
+                    <option value="<?= $u['id'] ?>"><?= htmlspecialchars($u['name'] . ' (' . $u['username'] . ')') ?></option>
+                <?php endforeach; ?>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Giữ phím Ctrl hoặc Cmd để chọn nhiều người.</p>
         </div>
 
         <label class="block text-sm font-medium text-gray-700 mb-1.5 mt-2">Upload hình ảnh</label>
@@ -395,9 +416,27 @@ document.querySelector('[name="name"]').addEventListener('input', function() {
     document.getElementById('slug').value = toSlug(this.value);
 });
 
-document.querySelector('form').addEventListener('submit', function() {
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nameInput = document.querySelector('[name="name"]');
+    if (!nameInput.value.trim()) {
+        e.preventDefault();
+        alert('Tên thiết kế không được để trống!');
+        nameInput.focus();
+        return;
+    }
     showLoading('Đang xử lý...');
 });
 
+const statusSelect = document.getElementById('statusSelect');
+const accessUsersWrapper = document.getElementById('accessUsersWrapper');
+function toggleAccessUsers() {
+    if (statusSelect.value === '2') {
+        accessUsersWrapper.style.display = 'none';
+    } else {
+        accessUsersWrapper.style.display = 'block';
+    }
+}
+statusSelect.addEventListener('change', toggleAccessUsers);
+toggleAccessUsers();
 
 </script>

@@ -7,7 +7,7 @@ if ($_SESSION['user']['role_id'] != 1) {
 }
 
 require_once '../../lib/db.php';
-$allProducts = $pdo->query("SELECT id, name FROM products ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$allProducts = $pdo->query("SELECT id, name FROM products WHERE status IN (0, 1) ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">

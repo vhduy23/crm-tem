@@ -20,6 +20,11 @@ $images = $stmt->fetchAll();
 $brands = $pdo->query("SELECT id, name FROM brands")->fetchAll();
 $categories = fetchCategories($pdo);
 
+$allUsers = $pdo->query("SELECT id, username, name FROM users WHERE role_id != 1 ORDER BY name ASC")->fetchAll();
+$assignedUsersStmt = $pdo->prepare("SELECT user_id FROM user_product_access WHERE product_id = ?");
+$assignedUsersStmt->execute([$id]);
+$assignedUsers = $assignedUsersStmt->fetchAll(PDO::FETCH_COLUMN);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $name = trim($_POST['name']);
@@ -29,6 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = isset($_POST['status']) ? (int)$_POST['status'] : 0;
     $approval_status = isset($_POST['approval_status']) ? (int)$_POST['approval_status'] : 0;
 
+    if (!$name) {
+        echo "<script>alert('Tên không được để trống'); history.back();</script>";
+        exit;
+    }
+
     // update product
     $stmt = $pdo->prepare("
         UPDATE products 
@@ -36,6 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE id=?
     ");
     $stmt->execute([$name, $desc, $brand_id, $category_id, $status, $approval_status, $id]);
+
+    // update access users
+    $pdo->prepare("DELETE FROM user_product_access WHERE product_id = ?")->execute([$id]);
+    $access_users = $_POST['access_users'] ?? [];
+    if (!empty($access_users)) {
+        $stmtAcc = $pdo->prepare("INSERT INTO user_product_access (user_id, product_id) VALUES (?, ?)");
+        foreach ($access_users as $uid) {
+            $stmtAcc->execute([$uid, $id]);
+        }
+    }
 
     // cập nhật thứ tự các ảnh cũ
     $currentMaxSort = 0;
@@ -75,7 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (file_exists($png)) {
                             unlink($png);
                         }
-                        die("Lỗi: Không thể xử lý ảnh '{$_FILES['images']['name'][$k]}'. Có thể ảnh được xuất ở định dạng không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng cấu hình KeyShot để xuất ảnh dưới dạng JPEG hoặc PNG 8-bit thông thường trước khi tải lên.");
+                        echo "<script>alert('Lỗi: Không thể xử lý ảnh {$_FILES['images']['name'][$k]}. Có thể ảnh được xuất ở định dạng không tương thích (ví dụ: PNG 16-bit/32-bit từ KeyShot). Vui lòng cấu hình KeyShot để xuất ảnh dưới dạng JPEG hoặc PNG 8-bit thông thường trước khi tải lên.'); history.back();</script>";
+                        exit;
                     }
                     $webp = '/uploads/products/' . basename($webpPath);
 
@@ -137,7 +158,7 @@ include '../partials/header.php';
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Hiển thị</label>
-                <select name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                <select id="statusSelect" name="status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     <option value="0" <?= $p['status'] == 0 ? 'selected' : '' ?>>Không công khai</option>
                     <option value="1" <?= $p['status'] == 1 ? 'selected' : '' ?>>Nội bộ</option>
                     <option value="2" <?= $p['status'] == 2 ? 'selected' : '' ?>>Công khai</option>
@@ -151,6 +172,18 @@ include '../partials/header.php';
                     <option value="2" <?= $p['approval_status'] == 2 ? 'selected' : '' ?>>Hủy</option>
                 </select>
             </div>
+        </div>
+
+        <div class="mb-4" id="accessUsersWrapper">
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Người dùng được xem (chỉ định riêng)</label>
+            <select name="access_users[]" multiple class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" style="min-height: 120px;">
+                <?php foreach($allUsers as $u): ?>
+                    <option value="<?= $u['id'] ?>" <?= in_array($u['id'], $assignedUsers) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($u['name'] . ' (' . $u['username'] . ')') ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Giữ phím Ctrl hoặc Cmd để chọn nhiều người.</p>
         </div>
 
         <!-- Ảnh đã có -->
@@ -472,5 +505,28 @@ function updateImageOrder() {
     const ids = Array.from(items).map(item => item.dataset.id);
     orderInput.value = ids.join(',');
 }
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nameInput = document.querySelector('[name="name"]');
+    if (!nameInput.value.trim()) {
+        e.preventDefault();
+        alert('Tên thiết kế không được để trống!');
+        nameInput.focus();
+        return;
+    }
+    showLoading('Đang xử lý...');
+});
+
+const statusSelect = document.getElementById('statusSelect');
+const accessUsersWrapper = document.getElementById('accessUsersWrapper');
+function toggleAccessUsers() {
+    if (statusSelect.value === '2') {
+        accessUsersWrapper.style.display = 'none';
+    } else {
+        accessUsersWrapper.style.display = 'block';
+    }
+}
+statusSelect.addEventListener('change', toggleAccessUsers);
+toggleAccessUsers();
 
 </script>
