@@ -5,12 +5,13 @@
 </footer>
 
 <!-- ICON -->
-<div id="print-cart-icon" class="fixed right-4 top-1/2 -translate-y-1/2 z-50 cursor-pointer">
-    <div class="relative bg-green-600 text-white p-3 rounded">
-        <!-- <i class="fa-solid fa-images"></i> -->
-         <span class="">In Pdf</span>
+<div id="print-cart-icon" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 cursor-pointer group">
+    <div class="relative bg-gradient-to-r from-[#195a61] to-[#369a8b] text-white px-3 py-1.5 rounded-xl shadow-[0_4px_20px_rgba(25,90,97,0.3)] transition-all duration-300 group-hover:scale-[1.05] flex items-center gap-1.5 border">
+        <i class="fa-solid fa-file-pdf text-xl drop-shadow-sm"></i>
+        <span class="font-bold text-[17px] tracking-wide drop-shadow-sm">In Pdf</span>
+        
         <span id="cart-count"
-              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">0</span>
+              class="absolute -top-3 -right-3 flex items-center justify-center min-w-[24px] h-[24px] bg-[#E33539] text-white text-[13px] font-bold px-1.5 rounded-full shadow-md border-2 border-white leading-none">0</span>
     </div>
 </div>
 
@@ -20,9 +21,9 @@
         <p id="btn-close-cart" class="text-right text-red-700 font-bold cursor-pointer ">X</p>
         <h2 class="font-bold mb-3">Thiết kế đã chọn</h2>
     </div>
-    <div id="cart-items" class="space-y-2 max-h-[70%] overflow-auto"></div>
+    <div id="cart-items" class="space-y-2 max-h-[450px] overflow-auto"></div>
 
-    <button id="print-btn" class="mt-4 w-full bg-green-500 text-white py-2 rounded">
+    <button id="print-btn" class="mt-4 w-full bg-gradient-to-r from-[#195a61] to-[#369a8b] text-white py-2.5 rounded-xl shadow-[0_4px_15px_rgba(25,90,97,0.25)] hover:shadow-[0_6px_20px_rgba(25,90,97,0.35)] transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold text-[16px] tracking-wide border border-black/5">
         In PDF
     </button>
 </div>
