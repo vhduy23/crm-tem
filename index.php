@@ -90,13 +90,19 @@ if ($brand_id > 0) {
 }
 $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
-$orderBy = "ORDER BY p.id DESC";
+$internalSort = "";
+if ($isLogin) {
+    // Ưu tiên: status = 1 (Nội bộ) hoặc được gán riêng
+    $internalSort = "(p.status = 1 $assignedSqlP) DESC, ";
+}
+
+$orderBy = "ORDER BY {$internalSort}p.id DESC";
 if ($sort === 'oldest') {
-    $orderBy = "ORDER BY p.id ASC";
+    $orderBy = "ORDER BY {$internalSort}p.id ASC";
 } elseif ($sort === 'name_asc') {
-    $orderBy = "ORDER BY p.name ASC";
+    $orderBy = "ORDER BY {$internalSort}p.name ASC";
 } elseif ($sort === 'name_desc') {
-    $orderBy = "ORDER BY p.name DESC";
+    $orderBy = "ORDER BY {$internalSort}p.name DESC";
 }
 
 // ===== TOTAL =====
@@ -361,8 +367,12 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
                 <?php if(!empty($data)): ?>
 
                     <?php foreach($data as $p): ?>
-
-                    <article class="bg-white border border-[#0B2558]/10 rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 hover:border-[#1a52b5]/25 transition-all duration-300">
+                        <?php 
+                            $isAssigned = !empty($userAssignedProducts) && in_array($p['id'], $userAssignedProducts);
+                            $isInternal = ($p['status'] == 1 || $isAssigned);
+                            $borderClass = $isInternal ? 'border-[1px] border-[#0b255882]' : 'border border-[#0B2558]/10 hover:border-[#1a52b5]/25';
+                        ?>
+                    <article class="bg-white <?= $borderClass ?> rounded-[14px] overflow-hidden relative group cursor-pointer hover:shadow-[0_10px_36px_rgba(11,37,88,0.14)] hover:-translate-y-1 transition-all duration-300">
                         
                         <div class="relative overflow-hidden">
                             <button type="button" class="open-design-popup block w-full aspect-[4/3] bg-[#EFF1F7] p-0 border-0 cursor-pointer overflow-hidden h-[250px]" data-product-id="<?= $p['id'] ?>">

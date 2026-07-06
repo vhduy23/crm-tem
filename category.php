@@ -25,19 +25,29 @@ if ($userId > 0) {
     $userAssignedProducts = $pdo->query("SELECT product_id FROM user_product_access WHERE user_id = $userId")->fetchAll(PDO::FETCH_COLUMN);
 }
 
+$internalSort = "";
+if ($userId > 0) {
+    $internalSort = "(p.status = 1 $assignedSqlP) DESC, ";
+}
+
 $stmt = $pdo->prepare("
     SELECT p.*,
     (SELECT image_path FROM product_images WHERE product_id=p.id ORDER BY sort_order ASC, id ASC LIMIT 1) as thumb
     FROM products p
     WHERE category_id IN ($placeholders) AND $statusFilter
-    ORDER BY id DESC
+    ORDER BY {$internalSort}id DESC
 ");
 $stmt->execute($catIds);
 ?>
 <div class="max-w-6xl mx-auto p-4">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <?php while($p = $stmt->fetch()): ?>
-        <div class="bg-white p-3 rounded shadow hover:shadow-lg transition">
+        <?php
+            $isAssigned = !empty($userAssignedProducts) && in_array($p['id'], $userAssignedProducts);
+            $isInternal = ($p['status'] == 1 || $isAssigned);
+            $borderClass = $isInternal ? 'border-2 border-[#0B2558]' : 'border-2 border-transparent';
+        ?>
+        <div class="bg-white p-3 rounded shadow hover:shadow-lg transition <?= $borderClass ?>">
             <a href="/thiet-ke/<?= $p['slug'] ?>" class="relative block">
                 <img loading="lazy" src="<?= $p['thumb'] ?>"
                     class="w-full h-50 object-cover mb-2 rounded">
