@@ -69,34 +69,28 @@ $datasets = [
     [
         'label' => 'Thiết kế',
         'data' => getStats($pdo, 'products', $filter, $startDate, $endDate, $labels),
-        'borderColor' => '#3b82f6', // blue-500
-        'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
+        'borderColor' => '#0ea5e9', // Light blue matching the image
+        'backgroundColor' => '#0ea5e9',
+        'borderWidth' => 3,
+        'pointRadius' => 4,
+        'pointBackgroundColor' => '#0ea5e9',
+        'pointBorderColor' => '#fff',
+        'pointBorderWidth' => 2,
         'tension' => 0.4,
-        'fill' => true
+        'fill' => false
     ],
     [
         'label' => 'Người dùng',
         'data' => getStats($pdo, 'users', $filter, $startDate, $endDate, $labels),
-        'borderColor' => '#10b981', // emerald-500
-        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
+        'borderColor' => '#f59e0b', // Yellow/Orange matching the image
+        'backgroundColor' => '#f59e0b',
+        'borderWidth' => 3,
+        'pointRadius' => 4,
+        'pointBackgroundColor' => '#f59e0b',
+        'pointBorderColor' => '#fff',
+        'pointBorderWidth' => 2,
         'tension' => 0.4,
-        'fill' => true
-    ],
-    [
-        'label' => 'Thương hiệu',
-        'data' => getStats($pdo, 'brands', $filter, $startDate, $endDate, $labels),
-        'borderColor' => '#8b5cf6', // violet-500
-        'backgroundColor' => 'rgba(139, 92, 246, 0.1)',
-        'tension' => 0.4,
-        'fill' => true
-    ],
-    [
-        'label' => 'Danh mục',
-        'data' => getStats($pdo, 'categories', $filter, $startDate, $endDate, $labels),
-        'borderColor' => '#f59e0b', // amber-500
-        'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
-        'tension' => 0.4,
-        'fill' => true
+        'fill' => false
     ]
 ];
 
