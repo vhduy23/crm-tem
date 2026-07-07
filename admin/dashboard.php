@@ -14,24 +14,7 @@ $totalUsers    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalBrands   = $pdo->query("SELECT COUNT(*) FROM brands")->fetchColumn();
 $totalCats     = $pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
 
-// ===== LATEST PRODUCTS =====
-$latest = $pdo->query("
-    SELECT p.*,
-        b.name AS brand_name,
-        c.name AS category_name,
-        (
-            SELECT image_path
-            FROM product_images
-            WHERE product_id = p.id
-            ORDER BY sort_order ASC, id ASC
-            LIMIT 1
-        ) AS image_path
-    FROM products p
-    LEFT JOIN brands b ON p.brand_id = b.id
-    LEFT JOIN categories c ON p.category_id = c.id
-    ORDER BY p.id DESC
-    LIMIT 8
-")->fetchAll();
+// Removed LATEST PRODUCTS query as it is now replaced by a chart
 
 $stats = [
     [
@@ -145,84 +128,76 @@ $stats = [
     </div>
 </div>
 
-<!-- LATEST PRODUCTS -->
-<div class="flex justify-between items-center mb-5">
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Thiết kế mới nhất</h2>
-        <p class="text-sm text-gray-500 mt-0.5"><?= count($latest) ?> thiết kế gần đây</p>
+<!-- CHART SECTION -->
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-8">
+    <div class="flex justify-between items-center mb-5">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Biểu đồ</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Theo dõi sự phát triển của hệ thống</p>
+        </div>
+        <select id="chartFilter" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            <option value="week">Tuần này</option>
+            <option value="month" selected>Tháng này</option>
+            <option value="quarter">Quý này</option>
+        </select>
     </div>
-    <a href="/admin/products"
-       class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-        Xem tất cả
-        <i class="fa-solid fa-arrow-right text-xs"></i>
-    </a>
+    <div class="relative h-80 w-full">
+        <canvas id="dashboardChart"></canvas>
+    </div>
 </div>
 
-<?php if (empty($latest)): ?>
-<div class="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
-    <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <i class="fa-solid fa-paintbrush text-2xl text-gray-400"></i>
-    </div>
-    <p class="text-gray-600 font-medium">Chưa có thiết kế nào</p>
-    <p class="text-gray-400 text-sm mt-1 mb-5">Bắt đầu bằng cách thêm thiết kế đầu tiên</p>
-    <a href="/admin/products/create.php"
-       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors">
-        <i class="fa-solid fa-plus"></i>
-        Thêm thiết kế
-    </a>
-</div>
-<?php else: ?>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-    <?php foreach ($latest as $p): ?>
-    <div class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-200">
-        <div class="relative aspect-[6/5] bg-gray-100 overflow-hidden">
-            <?php if ($p['image_path']): ?>
-                <img src="<?= htmlspecialchars($p['image_path']) ?>"
-                     alt="<?= htmlspecialchars($p['name']) ?>"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            <?php else: ?>
-                <div class="flex flex-col items-center justify-center h-full text-gray-300 gap-2">
-                    <i class="fa-regular fa-image text-3xl"></i>
-                    <span class="text-xs">Chưa có ảnh</span>
-                </div>
-            <?php endif; ?>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            <a href="/admin/products/edit.php?id=<?= (int) $p['id'] ?>"
-               class="absolute bottom-3 right-3 bg-white/90 hover:bg-white text-gray-800 text-xs font-medium px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 shadow-sm">
-                <i class="fa-solid fa-pen-to-square mr-1"></i> Sửa
-            </a>
-        </div>
-        <div class="p-4">
-            <h3 class="font-semibold text-gray-900 line-clamp-2 leading-snug mb-2">
-                <?= htmlspecialchars($p['name']) ?>
-            </h3>
-            <?php if ($p['brand_name'] || $p['category_name']): ?>
-            <div class="flex flex-wrap gap-1.5 mb-3">
-                <?php if ($p['brand_name']): ?>
-                <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-violet-50 text-violet-600 px-2 py-0.5 rounded-md">
-                    <i class="fa-solid fa-building-columns text-[9px]"></i>
-                    <?= htmlspecialchars($p['brand_name']) ?>
-                </span>
-                <?php endif; ?>
-                <?php if ($p['category_name']): ?>
-                <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md">
-                    <i class="fa-solid fa-layer-group text-[9px]"></i>
-                    <?= htmlspecialchars($p['category_name']) ?>
-                </span>
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
-            <div class="flex justify-between items-center pt-2 border-t border-gray-50">
-                <span class="text-xs text-gray-400 font-mono">#<?= (int) $p['id'] ?></span>
-                <a href="/admin/products/edit.php?id=<?= (int) $p['id'] ?>"
-                   class="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">
-                    Chi tiết →
-                </a>
-            </div>
-        </div>
-    </div>
-    <?php endforeach; ?>
-</div>
-<?php endif; ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let dashboardChart = null;
+
+    function fetchChartData(filter) {
+        fetch(`/admin/api/dashboard_chart.php?filter=${filter}`)
+            .then(res => res.json())
+            .then(data => {
+                const ctx = document.getElementById('dashboardChart').getContext('2d');
+                
+                if (dashboardChart) {
+                    dashboardChart.destroy();
+                }
+
+                dashboardChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: data.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Error fetching chart data:', err));
+    }
+
+    document.getElementById('chartFilter').addEventListener('change', function(e) {
+        fetchChartData(e.target.value);
+    });
+
+    // Initial load
+    fetchChartData('month');
+</script>
 
 <?php require 'partials/footer.php'; ?>
