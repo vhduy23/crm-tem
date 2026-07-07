@@ -6,6 +6,7 @@ include '../partials/header.php';
 // ===== GET FILTER =====
 $keyword = $_GET['keyword'] ?? '';
 $category_id = $_GET['category_id'] ?? '';
+$brand_id = $_GET['brand_id'] ?? '';
 
 // ===== PAGINATION =====
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -21,6 +22,11 @@ $params = [];
 if ($keyword) {
     $where[] = "p.name LIKE :keyword";
     $params[':keyword'] = "%$keyword%";
+}
+
+if ($brand_id) {
+    $where[] = "p.brand_id = :brand_id";
+    $params[':brand_id'] = $brand_id;
 }
 
 if ($category_id) {
@@ -82,9 +88,10 @@ $stmt->execute();
 // ===== LOAD CATEGORY =====
 $categories = fetchCategories($pdo);
 
+// ===== LOAD BRANDS =====
+$stmtBrands = $pdo->query("SELECT id, name FROM brands ORDER BY name ASC");
+$brands = $stmtBrands->fetchAll(PDO::FETCH_ASSOC);
 
-// print_r($_SESSION['csrf_token']);
-// die;
 ?>
 
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -110,8 +117,17 @@ $categories = fetchCategories($pdo);
             <?php renderCategorySelectOptions($categories, $category_id); ?>
         </select>
 
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-            Lọc
+        <select name="brand_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            <option value="">-- Thương hiệu --</option>
+            <?php foreach ($brands as $b): ?>
+                <option value="<?= $b['id'] ?>" <?= $brand_id == $b['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($b['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+            Tìm kiếm
         </button>
 
         <a href="index.php" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center">
