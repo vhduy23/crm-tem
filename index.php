@@ -55,7 +55,11 @@ if (!empty($_SESSION['member']['id']) || !empty($_SESSION['user']['id'])) {
     }
     
     // Nếu là user nội bộ (không phải khách hàng role 9) thì được xem status 1, 2. Nếu là role 9 thì chỉ xem 2.
-    if ($roleId !== 9) {
+    if ($roleId === 0) {
+        $whereCate = "1=1";
+        $whereBrand  = "1=1";
+        // Không đẩy gì vào $conditions để không lọc status
+    } elseif ($roleId !== 9) {
         $whereCate = "(status IN (1, 2) $assignedSql)";
         $whereBrand  = "(p.status IN (1, 2) $assignedSqlP)";
         $conditions[] = "(p.status IN (1, 2) $assignedSqlP)";

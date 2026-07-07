@@ -188,7 +188,7 @@ renderCart();
 
         let title = document.createElement('h3');
         title.innerText = item.name.toUpperCase();
-        Object.assign(title.style, { color: '#D32F2F', margin: '0 15px 0 0', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap' });
+        Object.assign(title.style, { color: '#D32F2F', margin: '0 15px 0 0', fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', lineHeight: '1', transform: 'translateY(-8px)' });
         titleWrapper.appendChild(title);
 
         let redLine = document.createElement('div');
@@ -206,7 +206,7 @@ renderCart();
             let el = document.createElement('img');
             el.crossOrigin = 'anonymous';
             el.src = src;
-            Object.assign(el.style, { width: '100%', height: 'auto', maxHeight: '150px', objectFit: 'contain' });
+            Object.assign(el.style, { width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#ffffff' });
             imgLoadPromises.push(new Promise(res => { el.onload = res; el.onerror = res; }));
             col.appendChild(el);
             row.appendChild(col);

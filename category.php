@@ -11,7 +11,9 @@ $userId = (int)($_SESSION['member']['id'] ?? $_SESSION['user']['id'] ?? 0);
 
 if ($userId > 0) {
     $assignedSqlP = $userId > 0 ? " OR p.id IN (SELECT product_id FROM user_product_access WHERE user_id = $userId)" : "";
-    if ($roleId !== 9) {
+    if ($roleId === 0) {
+        $statusFilter = "1=1";
+    } elseif ($roleId !== 9) {
         $statusFilter = "(p.status IN (1, 2) $assignedSqlP)";
     } else {
         $statusFilter = "(p.status = 2 $assignedSqlP)";

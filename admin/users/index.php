@@ -1,8 +1,10 @@
 <?php 
 include '../partials/header.php';
 
+// print_r($_SESSION['user']);
+
 // Chỉ admin mới được truy cập
-if ($_SESSION['user']['role_id'] != 1) {
+if ($_SESSION['user']['role_id'] != 1 && $_SESSION['user']['role_id'] != 0) {
     die("Không thể truy cập !!!");
 }
 

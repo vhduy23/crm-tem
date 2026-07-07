@@ -22,7 +22,7 @@ function checkLogin() {
 }
 
 function isAdmin() {
-    return isset($_SESSION['user']['role_id']) && (int)$_SESSION['user']['role_id'] === 1;
+    return isset($_SESSION['user']['role_id']) && in_array((int)$_SESSION['user']['role_id'], [0, 1]);
 }
 function getCurrentUserId() {
     if (isset($_SESSION['user'])) {
