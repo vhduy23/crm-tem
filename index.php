@@ -205,7 +205,7 @@ unset($p); // MUST UNSET REFERENCE TO PREVENT OVERWRITING LAST ITEM LATER
             <div class="bg-[#e8edf8] rounded-[14px] p-4 mb-0.5">
                 <div class="grid grid-cols-2 gap-2.5">
                     <div class="bg-[#EFF1F7] rounded-[10px] p-3 text-center">
-                        <div class="text-[22px] font-bold text-[#0B2558] leading-none">120+</div>
+                        <div class="text-[22px] font-bold text-[#0B2558] leading-none"><?= $totalPro ?>+</div>
                         <div class="text-[11px] text-[#8892AA] mt-1">Mẫu thiết kế</div>
                     </div>
                     <div class="bg-[#EFF1F7] rounded-[10px] p-3 text-center">
