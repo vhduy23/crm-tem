@@ -147,11 +147,11 @@ renderCart();
             <img id="hdr-logo" src="<?php echo $logoBase64; ?>"
                 style="max-width:100%;max-height:100%;object-fit:contain;">
         </div>
-        <div style="background:#004B87;flex-grow:1;display:flex;align-items:center;padding:0 25px;box-sizing:border-box;">
-            <span style="font-family: Barlow, sans-serif;font-weight: bold;color:#fff;font-size:30px;font-weight:bold;text-transform:uppercase; display:inline-block; transform:translateY(-10px);">
-                GRAPHIC DESIGNS
-            </span>
-        </div>`;
+    <div style="background:#004B87;flex-grow:1;display:flex;justify-content:center;align-items:center;padding:0 25px;box-sizing:border-box;">
+        <span style="font-family:Barlow,sans-serif;font-size:35px;font-weight:bold;color:#fff;text-transform:uppercase; transform:translateY(-17px);">
+            GRAPHIC DESIGNS
+        </span>
+    </div>`;
     headerEl.style.position = 'fixed';
     headerEl.style.left = '-9999px';
     document.body.appendChild(headerEl);
