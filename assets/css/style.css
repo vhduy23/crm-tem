@@ -21,8 +21,6 @@
   --trans:       .2s cubic-bezier(.4,0,.2,1);
 }
 
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--ff-body);
