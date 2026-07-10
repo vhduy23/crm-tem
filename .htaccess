@@ -1,6 +1,13 @@
 
 # Bật RewriteEngine
 RewriteEngine On
+
+# ===== MVC ROUTING =====
+# If the request is not for a valid file or directory, route it to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
 # ===== URL REWRITE =====
 RewriteRule ^thiet-ke/([^/]+)$ product-detail.php?slug=$1 [L,QSA]
 # ===== SECURITY HEADERS =====

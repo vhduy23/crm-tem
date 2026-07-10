@@ -1,5 +1,4 @@
 <?php
-echo "GD extension: " . (extension_loaded('gd') ? 'enabled' : 'disabled') . "\n";
-echo "Webp support: " . (function_exists('imagewebp') ? 'yes' : 'no') . "\n";
-
-echo phpinfo();
+$_SERVER['REQUEST_METHOD'] = 'GET';
+$_GET['url'] = 'thiet-ke/m0991';
+require 'index.php';

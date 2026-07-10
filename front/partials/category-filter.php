@@ -37,15 +37,15 @@ $filterPrefix = $filterPrefix ?? 'desktop';
         <?php else: ?>
         <div class="cat-filter-group <?= $isExpanded ? 'is-expanded' : '' ?>"
              data-group-id="<?= htmlspecialchars($filterPrefix) ?>-<?= (int) $parent['id'] ?>">
-             <div class="flex items-center p-[9px_12px] rounded-[9px] transition-colors border-[1.5px] no-underline
+             <div class="relative flex items-center p-[9px_12px] rounded-[9px] transition-colors border-[1.5px] no-underline
                         <?= $parentActive ? 'bg-[#e8edf8] border-[#1a52b5]/25' : 'border-transparent hover:bg-[#e8edf8]' ?>">
                 <a href="<?= buildFilterUrl(['cat' => $parent['id']]) ?>"
-                   class="cat-filter-link cat-filter-link--parent flex-1 flex items-center gap-2.5 min-w-0 no-underline">
+                   class="cat-filter-link cat-filter-link--parent flex-1 flex items-center gap-2.5 min-w-0 no-underline before:absolute before:inset-0">
                     <span class="w-2.5 h-2.5 rounded-full tag-<?= (int) $parent['id'] ?> shrink-0"></span>
                     <span class="text-[13.5px] font-semibold text-[#0B2558] truncate"><?= htmlspecialchars($parent['name']) ?></span>
                 </a>                
                 <button type="button"
-                        class="cat-filter-toggle shrink-0 flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#0B2558]/10 transition-colors"
+                        class="relative z-10 cat-filter-toggle shrink-0 flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#0B2558]/10 transition-colors"
                         aria-expanded="<?= $isExpanded ? 'true' : 'false' ?>"
                         aria-controls="<?= htmlspecialchars($filterPrefix) ?>-children-<?= (int) $parent['id'] ?>"
                         title="Mở / thu gọn danh mục con">

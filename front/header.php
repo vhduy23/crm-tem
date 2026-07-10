@@ -55,7 +55,7 @@ if(isDetail()){
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/style.css">
 <?php if(isDetail()){ ?>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -83,7 +83,7 @@ if(isDetail()){
                         <div class="absolute left-0 top-full pt-2 hidden group-hover:block z-50">
                             <div class="bg-white rounded-lg shadow-lg py-2 min-w-[180px]">
                                 <?php foreach ($parent['children'] as $child): ?>
-                                <a href="/category.php?id=<?= $child['id'] ?>"
+                                <a href="/category?id=<?= $child['id'] ?>"
                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700">
                                     <?= htmlspecialchars($child['name']) ?>
                                 </a>
@@ -106,17 +106,17 @@ if(isDetail()){
                                 Chào, <strong class="text-[#e1aa58]"><?= htmlspecialchars($_SESSION['member']['name']) ?></strong>
                             </span>
                             <span class="text-white/20">|</span>
-                            <a href="/logout.php" class="text-white/70 hover:text-red-400 text-xs sm:text-sm font-medium transition-colors">
+                            <a href="/logout" class="text-white/70 hover:text-red-400 text-xs sm:text-sm font-medium transition-colors">
                                 Đăng xuất
                             </a>
                         </div>
                     <?php else: ?>
-                        <div class="flex items-center gap-3">
-                            <a href="/login.php" class="text-white/80 hover:text-white text-sm font-medium transition-colors">
+                        <div class="flex items-center gap-4">
+                            <a href="/login" class="text-white/80 hover:text-white text-sm font-medium transition-colors">
                                 Đăng nhập
                             </a>
-                            <span class="text-white/20">|</span>
-                            <a href="/register.php" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-semibold tracking-wide transition-colors">
+                            <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+                            <a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-semibold tracking-wide transition-colors">
                                 Đăng ký
                             </a>
                         </div>
