@@ -86,7 +86,7 @@
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fa-solid fa-shield text-sm"></i>
                         </span>
-                        <input type="password" name="confirm_password" required
+                        <input type="password" name="repass" required
                             class="w-full border border-gray-200 rounded-2xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 transition-all placeholder-gray-400"
                             placeholder="Nhập lại mật khẩu phía trên">
                     </div>

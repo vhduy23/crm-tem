@@ -4,6 +4,10 @@
 // Autoloader
 require_once __DIR__ . '/core/autoload.php';
 
+// Global configurations and connections
+require_once __DIR__ . '/lib/db.php';
+require_once __DIR__ . '/lib/session.php';
+
 use Core\Router;
 
 $router = new Router();

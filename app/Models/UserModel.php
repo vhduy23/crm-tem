@@ -31,8 +31,8 @@ class UserModel {
 
     public function register($data) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO users (username, password, name, phone, role_id, status)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (username, password, name, role_id, status)
+            VALUES (?, ?, ?, ?, ?)
         ");
         
         $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
@@ -41,7 +41,6 @@ class UserModel {
             $data['username'],
             $hashed,
             $data['name'],
-            $data['phone'] ?? '',
             $data['role_id'],
             $data['status']
         ]);
