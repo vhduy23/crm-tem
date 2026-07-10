@@ -16,10 +16,17 @@ spl_autoload_register(function ($class) {
     // Get the relative class name
     $relative_class = substr($class, $len);
     
-    // Replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    // Convert to path
+    $path = str_replace('\\', '/', $relative_class);
+    
+    // Lowercase the first directory (Core -> core, App -> app) for Linux case-sensitivity
+    $parts = explode('/', $path);
+    if (count($parts) > 1) {
+        $parts[0] = strtolower($parts[0]);
+    }
+    $path = implode('/', $parts);
+
+    $file = $base_dir . $path . '.php';
     
     // If the file exists, require it
     if (file_exists($file)) {
